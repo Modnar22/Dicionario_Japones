@@ -1,0 +1,733 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Dicionário Gamificado — Japonês</title>
+<style>
+  :root{
+    --bg:#071025; --panel:#071827; --card:#0b2636; --muted:#9fb0c9; --accent:#1f6feb; --success:#0bb37a;
+    --danger:#e25858; --glass: rgba(255,255,255,0.03);
+    font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+  }
+  *{box-sizing:border-box}
+  body{margin:18px;background:linear-gradient(180deg,#031025,#061428);color:#eaf4ff}
+  .wrap{max-width:1100px;margin:0 auto;padding:18px;background:linear-gradient(180deg, rgba(255,255,255,0.02), transparent);border-radius:12px}
+  header{display:flex;gap:12px;align-items:center;justify-content:space-between;margin-bottom:12px}
+  h1{font-size:20px;margin:0}
+  .topInfo{display:flex;gap:12px;align-items:center}
+  .cardSmall{background:var(--panel);padding:10px;border-radius:10px;border:1px solid rgba(255,255,255,0.03);min-width:120px}
+  .muted{color:var(--muted);font-size:13px}
+  .controls{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+  .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+  @media (max-width:900px){.grid{grid-template-columns:1fr}}
+  input,select,textarea,button{font-size:14px}
+  input,select,textarea{width:100%;padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.04);background:var(--card);color:inherit}
+  textarea{min-height:70px;resize:vertical}
+  button{background:var(--accent);color:white;padding:8px 12px;border-radius:8px;border:none;cursor:pointer}
+  button.ghost{background:transparent;border:1px solid rgba(255,255,255,0.04)}
+  .panel{background:var(--panel);padding:12px;border-radius:12px;border:1px solid rgba(255,255,255,0.03);margin-bottom:12px}
+  .list{display:grid;gap:8px;margin-top:10px}
+  .entry{display:flex;justify-content:space-between;gap:8px;align-items:flex-start;padding:10px;border-radius:10px;background:var(--glass);border:1px solid rgba(255,255,255,0.02)}
+  .wordBlock{display:flex;flex-direction:column;gap:6px}
+  .wordMain{font-size:18px;font-weight:700;display:flex;align-items:center;gap:8px}
+  .reading{opacity:.85;font-size:13px}
+  .meta{font-size:13px;color:var(--muted)}
+  .actions{display:flex;gap:6px}
+  .tag{padding:4px 8px;border-radius:999px;background:rgba(255,255,255,0.02);font-size:12px}
+  .newBadge{color:#ffe59a;font-weight:700;margin-left:6px}
+  .statsRow{display:flex;gap:8px;align-items:center;margin-top:8px;font-size:13px;color:var(--muted)}
+  .progress{height:10px;background:rgba(255,255,255,0.03);border-radius:999px;overflow:hidden}
+  .progress > span{display:block;height:100%;background:linear-gradient(90deg,var(--accent),#6aa9ff)}
+  .quizBox{display:grid;gap:8px;align-items:center}
+  .prompt{font-size:22px;font-weight:700}
+  .feedback{font-weight:700}
+  .small{font-size:13px;color:var(--muted)}
+  .center{display:flex;justify-content:center;align-items:center;gap:8px}
+  .danger{color:var(--danger)}
+  footer{margin-top:18px;font-size:13px;color:var(--muted);text-align:center}
+</style>
+</head>
+<body>
+<div class="wrap" role="application" aria-label="Dicionário Gamificado Japonês">
+  <header>
+    <div>
+      <h1>Meu Dicionário Gamificado — Japonês ✨</h1>
+      <div class="small muted">Minimalista escuro · Quiz aleatório (JP↔PT) · XP por JLPT</div>
+    </div>
+    <div class="topInfo">
+      <div class="cardSmall">
+        <div class="muted">Palavras</div>
+        <div id="totalWords" style="font-weight:700">0</div>
+        <div class="small muted">Novas: <span id="newCount">0</span> ✨</div>
+      </div>
+      <div class="cardSmall">
+        <div class="muted">Nível</div>
+        <div id="userLevel" style="font-weight:700">1</div>
+        <div class="small muted">XP: <span id="userXP">0</span></div>
+      </div>
+      <div class="cardSmall" style="min-width:180px">
+        <div class="muted">Progresso para próximo nível</div>
+        <div class="progress" style="margin-top:6px"><span id="xpBar" style="width:0%"></span></div>
+        <div class="small muted" style="margin-top:6px"><span id="xpToNext">0</span> XP restantes</div>
+      </div>
+    </div>
+  </header>
+
+  <div class="panel">
+    <form id="addForm" onsubmit="event.preventDefault(); addWord();">
+      <div class="grid">
+        <div>
+          <label class="small muted">Palavra (Kanji/Hiragana)</label>
+          <input id="word" placeholder="ex: いぬ / 犬" required />
+        </div>
+        <div>
+          <label class="small muted">Leitura (furigana)</label>
+          <input id="reading" placeholder="ex: いぬ" />
+        </div>
+        <div>
+          <label class="small muted">Tradução (pt-BR)</label>
+          <input id="translation" placeholder="ex: cachorro" required />
+        </div>
+        <div>
+          <label class="small muted">JLPT</label>
+          <select id="level">
+            <option value="">(opcional)</option>
+            <option value="N5">N5</option>
+            <option value="N4">N4</option>
+            <option value="N3">N3</option>
+            <option value="N2">N2</option>
+            <option value="N1">N1</option>
+          </select>
+        </div>
+        <div>
+          <label class="small muted">Categoria</label>
+          <input id="category" placeholder="ex: Comida, Animais, Verbos" />
+        </div>
+        <div>
+          <label class="small muted">Tags (vírgula)</label>
+          <input id="tags" placeholder="ex: animal, básico" />
+        </div>
+        <div style="grid-column:1/-1">
+          <label class="small muted">Notas / Exemplo</label>
+          <textarea id="notes" placeholder="ex: いぬ は かわいい。"></textarea>
+        </div>
+
+        <div style="grid-column:1/-1;display:flex;gap:8px;align-items:center">
+          <button type="submit">➕ Adicionar palavra (ganha XP)</button>
+          <button type="button" class="ghost" onclick="clearForm()">Limpar</button>
+          <button type="button" class="ghost" onclick="exportJSON()">Exportar JSON</button>
+          <label class="ghost" style="padding:8px;border-radius:8px;cursor:pointer">
+            Importar JSON
+            <input type="file" id="importFile" accept="application/json" style="display:none" onchange="importJSON(event)" />
+          </label>
+          <button type="button" class="ghost" onclick="confirmClearDB()">Limpar tudo</button>
+        </div>
+      </div>
+    </form>
+  </div>
+
+  <div style="display:grid;grid-template-columns:1fr 420px;gap:12px">
+    <section class="panel" aria-label="Dicionário">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+        <div>
+          <input id="q" placeholder="Buscar (palavra, leitura, tradução, tag, nota)" oninput="renderList()" style="width:420px;max-width:100%" />
+        </div>
+        <div style="display:flex;gap:8px;align-items:center">
+          <select id="filterLevel" onchange="renderList()">
+            <option value="">Todos JLPT</option>
+            <option value="N5">N5</option>
+            <option value="N4">N4</option>
+            <option value="N3">N3</option>
+            <option value="N2">N2</option>
+            <option value="N1">N1</option>
+          </select>
+          <select id="filterCategory" onchange="renderList()">
+            <option value="">Todas categorias</option>
+          </select>
+          <select id="sortBy" onchange="renderList()">
+            <option value="createdDesc">Mais recentes</option>
+            <option value="createdAsc">Mais antigos</option>
+            <option value="wordAsc">A → Z</option>
+            <option value="wordDesc">Z → A</option>
+            <option value="accuracyDesc">Maior acerto</option>
+          </select>
+        </div>
+      </div>
+
+      <div id="list" class="list"></div>
+      <div id="empty" class="small muted" style="text-align:center;padding:12px" hidden>Seu dicionário está vazio. Adicione palavras acima.</div>
+    </section>
+
+    <aside class="panel" aria-label="Quiz e Estatísticas">
+      <div style="margin-bottom:12px">
+        <h3 style="margin:0 0 8px">Praticar — Quiz Aleatório (JP ↔ PT)</h3>
+        <div class="small muted">O sistema escolhe aleatoriamente a direção para cada pergunta.</div>
+      </div>
+
+      <div class="quizBox" id="quizBox">
+        <div id="quizIntro" class="center">
+          <div class="small muted">Palavras disponíveis: <strong id="availableForQuiz">0</strong></div>
+        </div>
+
+        <div id="quizArea" style="display:none">
+          <div id="prompt" class="prompt"></div>
+          <input id="answer" placeholder="Digite sua resposta e pressione Enter" onkeydown="if(event.key==='Enter'){submitAnswer()}"/>
+          <div style="display:flex;gap:8px;margin-top:6px">
+            <button onclick="submitAnswer()">Verificar</button>
+            <button class="ghost" onclick="skipQuestion()">Pular</button>
+            <button class="ghost" onclick="endQuiz()">Sair</button>
+          </div>
+          <div id="feedback" class="feedback" style="margin-top:8px"></div>
+          <div class="statsRow">
+            <div class="small muted">Acertos: <span id="quizCorrect">0</span></div>
+            <div class="small muted">Erros: <span id="quizWrong">0</span></div>
+            <div class="small muted">Perguntas: <span id="quizTotal">0</span></div>
+            <div class="small muted">Taxa: <span id="quizRate">0%</span></div>
+          </div>
+        </div>
+
+        <div id="quizControls" class="center" style="margin-top:12px">
+          <button onclick="startQuiz()">Iniciar Quiz</button>
+          <button class="ghost" onclick="resetStats()">Resetar stats</button>
+        </div>
+      </div>
+
+      <hr style="margin:12px 0;border:none;border-top:1px solid rgba(255,255,255,0.03)">
+
+      <div style="margin-top:8px">
+        <h4 style="margin:0 0 8px">Minhas estatísticas</h4>
+        <div class="small muted">Total acertos: <strong id="totalCorrect">0</strong></div>
+        <div class="small muted">Total erros: <strong id="totalWrong">0</strong></div>
+        <div style="margin-top:8px">
+          <div class="small muted">Contagem por categoria:</div>
+          <div id="categoryCounts" style="margin-top:6px;display:flex;gap:6px;flex-wrap:wrap"></div>
+        </div>
+      </div>
+    </aside>
+  </div>
+
+  <footer>Dados armazenados localmente no seu navegador (localStorage). Para sincronizar entre dispositivos precise de backend.</footer>
+</div>
+
+<script>
+/* ============================
+  DADOS / ESTRUTURAS
+  ============================ */
+const STORAGE_KEY = 'personal_jp_dict_v3';
+let state = loadState();
+
+/* Estrutura:
+state = {
+  words: [ { id, word, reading, translation, level, category, tags[], notes, createdAt, seen, stats: { correct, wrong, lastPracticed } } ],
+  xp: number,
+  level: number,
+  totalCorrect: number,
+  totalWrong: number
+}
+*/
+
+function defaultState(){
+  return { words:[], xp:0, level:1, totalCorrect:0, totalWrong:0 };
+}
+
+function loadState(){
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    return raw ? JSON.parse(raw) : defaultState();
+  } catch(e){ console.error(e); return defaultState(); }
+}
+
+function saveState(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
+
+/* ============================
+  CONFIG: XP por JLPT e thresholds
+  ============================ */
+// XP awarded when adding a new word (by JLPT)
+const XP_BY_JLPT = {
+  'N5': 5,
+  'N4': 8,
+  'N3': 12,
+  'N2': 18,
+  'N1': 25,
+  '': 6 // default if no level specified
+};
+
+// XP awarded for a correct quiz answer (by JLPT)
+const QUIZ_XP_BY_JLPT = {
+  'N5': 3,
+  'N4': 5,
+  'N3': 8,
+  'N2': 12,
+  'N1': 18,
+  '': 4
+};
+
+// Níveis e thresholds (XP total necessário para alcançar o nível)
+const LEVELS = [
+  {level:1, xp:0},
+  {level:2, xp:100},
+  {level:3, xp:250},
+  {level:4, xp:500},
+  {level:5, xp:1000},
+  {level:6, xp:2000},
+  {level:7, xp:4000},
+  {level:8, xp:8000}
+];
+
+function xpForNextLevel(currentLevel){
+  const next = LEVELS.find(l=>l.level === currentLevel+1);
+  return next ? next.xp : LEVELS[LEVELS.length-1].xp;
+}
+function computeLevelFromXP(xp){
+  let lvl = 1;
+  for(let i=LEVELS.length-1;i>=0;i--){
+    if(xp >= LEVELS[i].xp){ lvl = LEVELS[i].level; break; }
+  }
+  return lvl;
+}
+
+/* ============================
+  UTILS
+  ============================ */
+function uid(){ return 'id-'+Math.random().toString(36).slice(2,10); }
+function now(){ return Date.now(); }
+function normalizeText(s){ return (s||'').toString().trim().toLowerCase(); }
+function includesLoose(a,b){ // check if b occurs inside a (both normalized)
+  return normalizeText(a).includes(normalizeText(b));
+}
+
+/* ============================
+  RENDER / UI
+  ============================ */
+function updateTopInfo(){
+  document.getElementById('totalWords').innerText = state.words.length;
+  const newCount = state.words.filter(w => !w.seen).length;
+  document.getElementById('newCount').innerText = newCount;
+  document.getElementById('userXP').innerText = state.xp;
+  state.level = computeLevelFromXP(state.xp);
+  document.getElementById('userLevel').innerText = state.level;
+  const nextXp = xpForNextLevel(state.level);
+  const prevXp = LEVELS.find(l=>l.level===state.level)?.xp || 0;
+  const progressPct = Math.round(((state.xp - prevXp) / Math.max(1, nextXp - prevXp)) * 100);
+  document.getElementById('xpBar').style.width = Math.min(100, Math.max(0, progressPct)) + '%';
+  document.getElementById('xpToNext').innerText = Math.max(0, nextXp - state.xp);
+}
+
+function populateCategoryFilter(){
+  const select = document.getElementById('filterCategory');
+  const cats = Array.from(new Set(state.words.map(w => (w.category||'').trim()).filter(Boolean)));
+  select.innerHTML = '<option value="">Todas categorias</option>' + cats.map(c=>`<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join('');
+  // also update category counts area
+  const container = document.getElementById('categoryCounts');
+  container.innerHTML = '';
+  cats.forEach(c=>{
+    const count = state.words.filter(w=> (w.category||'').trim() === c).length;
+    const el = document.createElement('div');
+    el.className = 'tag';
+    el.innerText = `${c} (${count})`;
+    container.appendChild(el);
+  });
+}
+
+function renderList(){
+  updateTopInfo();
+  populateCategoryFilter();
+
+  const list = document.getElementById('list');
+  const empty = document.getElementById('empty');
+  list.innerHTML = '';
+
+  let items = state.words.slice();
+  const q = normalizeText(document.getElementById('q').value || '');
+  const filterLevel = document.getElementById('filterLevel').value;
+  const filterCategory = document.getElementById('filterCategory').value;
+  const sortBy = document.getElementById('sortBy').value;
+
+  if(q){
+    items = items.filter(e =>
+      includesLoose(e.word,q) ||
+      includesLoose(e.reading,q) ||
+      includesLoose(e.translation,q) ||
+      (e.tags||[]).some(t=>includesLoose(t,q)) ||
+      includesLoose(e.notes,q)
+    );
+  }
+  if(filterLevel) items = items.filter(e=>e.level===filterLevel);
+  if(filterCategory) items = items.filter(e=> (e.category||'') === filterCategory);
+
+  if(sortBy === 'createdAsc') items.sort((a,b)=>a.createdAt - b.createdAt);
+  if(sortBy === 'createdDesc') items.sort((a,b)=>b.createdAt - a.createdAt);
+  if(sortBy === 'wordAsc') items.sort((a,b)=> (a.word||'').localeCompare(b.word||''));
+  if(sortBy === 'wordDesc') items.sort((a,b)=> (b.word||'').localeCompare(a.word||''));
+  if(sortBy === 'accuracyDesc') items.sort((a,b)=> {
+    const aAcc = accuracyOf(a), bAcc = accuracyOf(b);
+    return (bAcc - aAcc);
+  });
+
+  if(items.length === 0){
+    empty.hidden = false;
+    return;
+  }
+  empty.hidden = true;
+
+  items.forEach(e => {
+    const el = document.createElement('div');
+    el.className = 'entry';
+    el.innerHTML = `
+      <div style="display:flex;gap:12px;align-items:flex-start;min-width:0">
+        <div class="wordBlock" style="min-width:0">
+          <div class="wordMain">${escapeHtml(e.word)} ${e.level ? `<span class="tag">${e.level}</span>` : ''} ${!e.seen ? '<span class="newBadge">✨</span>' : ''}</div>
+          <div class="reading">${escapeHtml(e.reading || '')}</div>
+          <div class="meta">${escapeHtml(e.translation)} ${e.tags && e.tags.length ? ' · ' + e.tags.map(t=>escapeHtml(t)).join(', ') : ''}</div>
+          <div class="statsRow">
+            <div class="small muted">Acertos: ${e.stats.correct || 0}</div>
+            <div class="small muted">Erros: ${e.stats.wrong || 0}</div>
+            <div class="small muted">Últ: ${e.stats.lastPracticed ? (new Date(e.stats.lastPracticed)).toLocaleString() : '—'}</div>
+          </div>
+        </div>
+      </div>
+      <div class="actions">
+        <button onclick="showEdit('${e.id}')">Editar</button>
+        <button class="ghost" onclick="markSeen('${e.id}')">${e.seen ? 'Marcar nova' : 'Marcar vista'}</button>
+        <button class="ghost" onclick="practiceSingle('${e.id}')">Praticar</button>
+        <button class="ghost danger" onclick="deleteEntry('${e.id}')">Excluir</button>
+      </div>
+    `;
+    list.appendChild(el);
+  });
+  // update available for quiz
+  document.getElementById('availableForQuiz').innerText = state.words.length;
+}
+
+/* ============================
+  CRUD de palavras
+  ============================ */
+function addWord(){
+  const w = (document.getElementById('word').value || '').trim();
+  if(!w) return alert('Preencha a palavra.');
+  const reading = (document.getElementById('reading').value || '').trim();
+  const translation = (document.getElementById('translation').value || '').trim();
+  if(!translation) return alert('Preencha a tradução.');
+  const level = (document.getElementById('level').value || '').trim();
+  const category = (document.getElementById('category').value || '').trim();
+  const tags = (document.getElementById('tags').value || '').split(',').map(s=>s.trim()).filter(Boolean);
+  const notes = (document.getElementById('notes').value || '').trim();
+
+  // deduplicação: se existir palavra + tradução idênticos, não duplicar
+  const exists = state.words.some(x => x.word === w && x.translation === translation);
+  if(exists){
+    if(!confirm('Essa palavra já existe com a mesma tradução. Deseja adicionar mesmo assim?')) return;
+  }
+
+  const entry = {
+    id: uid(),
+    word: w,
+    reading,
+    translation,
+    level,
+    category,
+    tags,
+    notes,
+    createdAt: now(),
+    seen: false, // nova
+    stats: { correct:0, wrong:0, lastPracticed: null }
+  };
+  state.words.unshift(entry);
+
+  // ganho de XP pela adição: depende do JLPT
+  const xpGain = XP_BY_JLPT[level] ?? XP_BY_JLPT[''];
+  addXP(xpGain);
+
+  saveState();
+  clearForm();
+  renderList();
+  alert(`Palavra adicionada! Você ganhou ${xpGain} XP.`);
+}
+
+function clearForm(){
+  ['word','reading','translation','level','category','tags','notes'].forEach(id => document.getElementById(id).value = '');
+}
+
+function showEdit(id){
+  const e = state.words.find(w => w.id === id);
+  if(!e) return;
+  document.getElementById('word').value = e.word;
+  document.getElementById('reading').value = e.reading || '';
+  document.getElementById('translation').value = e.translation || '';
+  document.getElementById('level').value = e.level || '';
+  document.getElementById('category').value = e.category || '';
+  document.getElementById('tags').value = (e.tags||[]).join(', ');
+  document.getElementById('notes').value = e.notes || '';
+  // remove temporariamente para evitar duplo ao salvar; manter id by reusing if user saves
+  state.words = state.words.filter(w => w.id !== id);
+  saveState();
+  renderList();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function markSeen(id){
+  const e = state.words.find(w=>w.id===id);
+  if(!e) return;
+  e.seen = !e.seen;
+  saveState();
+  renderList();
+}
+
+function deleteEntry(id){
+  if(!confirm('Excluir palavra?')) return;
+  state.words = state.words.filter(w => w.id !== id);
+  saveState();
+  renderList();
+}
+
+function confirmClearDB(){
+  if(confirm('Apagar todo o dicionário? Esta ação não pode ser desfeita.')) {
+    state = defaultState();
+    saveState();
+    renderList();
+  }
+}
+
+/* ============================
+  EXPORT / IMPORT JSON
+  ============================ */
+function exportJSON(){
+  const dataStr = JSON.stringify(state, null, 2);
+  const blob = new Blob([dataStr], {type: 'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'my_gamified_jp_dictionary.json';
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+function importJSON(e){
+  const f = e.target.files[0];
+  if(!f) return;
+  const reader = new FileReader();
+  reader.onload = () => {
+    try {
+      const imported = JSON.parse(reader.result);
+      if(!imported || !Array.isArray(imported.words)) throw new Error('Formato inválido: objeto com propriedade "words" esperada.');
+      // dedupe: adicionar somente novos (com base em word+translation)
+      const existingKeys = new Set(state.words.map(x=>x.word + '||' + x.translation));
+      let added=0;
+      imported.words.forEach(item=>{
+        const key = (item.word||'') + '||' + (item.translation||'');
+        if(!existingKeys.has(key)){
+          // ensure minimal shape
+          const clean = {
+            id: item.id || uid(),
+            word: item.word || '',
+            reading: item.reading || '',
+            translation: item.translation || '',
+            level: item.level || '',
+            category: item.category || '',
+            tags: item.tags || [],
+            notes: item.notes || '',
+            createdAt: item.createdAt || now(),
+            seen: item.seen === true,
+            stats: item.stats || {correct:0,wrong:0,lastPracticed:null}
+          };
+          state.words.push(clean);
+          added++;
+        }
+      });
+      saveState();
+      renderList();
+      alert(`Importado com sucesso. ${added} novas entradas adicionadas.`);
+    } catch(err){
+      alert('Erro ao importar JSON: ' + err.message);
+    }
+  };
+  reader.readAsText(f);
+  e.target.value = '';
+}
+
+/* ============================
+  XP / LEVELS
+  ============================ */
+function addXP(n){
+  state.xp = (state.xp || 0) + (n||0);
+  // recompute level
+  state.level = computeLevelFromXP(state.xp);
+  saveState();
+  updateTopInfo();
+}
+
+/* ============================
+  QUIZ: fluxo e lógica
+  ============================ */
+let quizState = { active:false, pool:[], current:null, direction:'jp2pt', correct:0, wrong:0, total:0 };
+
+function startQuiz(){
+  if(state.words.length === 0){ alert('Não há palavras para praticar.'); return; }
+  quizState.pool = state.words.slice();
+  quizState.active = true;
+  quizState.correct = 0; quizState.wrong = 0; quizState.total = 0;
+  document.getElementById('quizIntro').style.display = 'none';
+  document.getElementById('quizArea').style.display = '';
+  document.getElementById('quizControls').style.display = 'none';
+  nextQuestion();
+  updateQuizUI();
+}
+
+function endQuiz(){
+  quizState.active = false;
+  document.getElementById('quizArea').style.display = 'none';
+  document.getElementById('quizIntro').style.display = '';
+  document.getElementById('quizControls').style.display = '';
+  saveState();
+  renderList();
+  alert(`Quiz finalizado. Acertos: ${quizState.correct}, Erros: ${quizState.wrong}`);
+}
+
+function resetStats(){
+  if(!confirm('Resetar estatísticas globais (acertos/erros)?')) return;
+  state.totalCorrect = 0; state.totalWrong = 0;
+  state.words.forEach(w=> w.stats = {correct:0,wrong:0,lastPracticed:null});
+  saveState();
+  renderList();
+  updateQuizUI();
+}
+
+function nextQuestion(){
+  if(!quizState.pool.length){
+    // rebuild pool so quiz can continue indefinitely
+    quizState.pool = state.words.slice();
+  }
+  // pick random index
+  const idx = Math.floor(Math.random() * quizState.pool.length);
+  const candidate = quizState.pool.splice(idx,1)[0]; // remove from pool
+  // decide direction randomly (C option): jp->pt or pt->jp
+  const dir = Math.random() < 0.5 ? 'jp2pt' : 'pt2jp';
+  quizState.current = candidate;
+  quizState.direction = dir;
+  quizState.total++;
+  // show prompt
+  const prompt = document.getElementById('prompt');
+  if(dir === 'jp2pt'){
+    prompt.innerText = candidate.word + (candidate.reading ? (' — ' + candidate.reading) : '');
+  } else {
+    prompt.innerText = candidate.translation;
+  }
+  document.getElementById('answer').value = '';
+  document.getElementById('feedback').innerText = '';
+  updateQuizUI();
+}
+
+function submitAnswer(){
+  if(!quizState.active || !quizState.current) return;
+  const ans = (document.getElementById('answer').value || '').trim();
+  if(!ans) return alert('Digite uma resposta (ou clique pular).');
+  const cur = quizState.current;
+  let correct = false;
+  if(quizState.direction === 'jp2pt'){
+    // check translation: accept if ans includes translation or vice versa
+    const target = cur.translation || '';
+    if(includesLoose(target, ans) || includesLoose(ans, target)) correct = true;
+  } else {
+    // pt2jp: accept if ans equals word or reading loosely
+    if(includesLoose(cur.word, ans) || includesLoose(cur.reading, ans) || includesLoose(ans, cur.word) || includesLoose(ans, cur.reading)) correct = true;
+  }
+
+  if(correct){
+    quizState.correct++;
+    state.totalCorrect = (state.totalCorrect || 0) + 1;
+    cur.stats.correct = (cur.stats.correct || 0) + 1;
+    cur.stats.lastPracticed = now();
+    // award XP for correct answer based on JLPT
+    const xp = QUIZ_XP_BY_JLPT[cur.level] ?? QUIZ_XP_BY_JLPT[''];
+    addXP(xp);
+    document.getElementById('feedback').innerHTML = `<span style="color:var(--success)">✔ Correto! +${xp} XP</span>`;
+  } else {
+    quizState.wrong++;
+    state.totalWrong = (state.totalWrong || 0) + 1;
+    cur.stats.wrong = (cur.stats.wrong || 0) + 1;
+    cur.stats.lastPracticed = now();
+    document.getElementById('feedback').innerHTML = `<span class="danger">✖ Incorreto</span> · Resposta correta: <strong>${escapeHtml(quizState.direction==='jp2pt' ? cur.translation : (cur.word + (cur.reading ? ' — ' + cur.reading : '')) )}</strong>`;
+  }
+  // mark seen
+  cur.seen = true;
+  saveState();
+  updateQuizUI();
+  // after short delay go to next
+  setTimeout(()=> {
+    if(quizState.active) nextQuestion();
+  }, 900);
+}
+
+function skipQuestion(){
+  if(!quizState.active) return;
+  // skip simply shows answer then next question
+  const cur = quizState.current;
+  document.getElementById('feedback').innerHTML = `<span class="small muted">Pulado · Resposta: <strong>${escapeHtml(quizState.direction==='jp2pt' ? cur.translation : (cur.word + (cur.reading ? ' — ' + cur.reading : '')) )}</strong></span>`;
+  cur.stats.lastPracticed = now();
+  cur.seen = true;
+  saveState();
+  setTimeout(()=> { if(quizState.active) nextQuestion(); }, 900);
+}
+
+function practiceSingle(id){
+  // start a mini-quiz for a single word
+  const w = state.words.find(x=>x.id===id);
+  if(!w) return;
+  quizState.active = true;
+  quizState.pool = []; // empty so nextQuestion will rebuild pool
+  quizState.current = w;
+  quizState.direction = Math.random() < 0.5 ? 'jp2pt' : 'pt2jp';
+  document.getElementById('quizIntro').style.display = 'none';
+  document.getElementById('quizArea').style.display = '';
+  document.getElementById('quizControls').style.display = 'none';
+  quizState.correct = 0; quizState.wrong = 0; quizState.total = 1;
+  if(quizState.direction === 'jp2pt'){
+    document.getElementById('prompt').innerText = w.word + (w.reading ? ' — ' + w.reading : '');
+  } else {
+    document.getElementById('prompt').innerText = w.translation;
+  }
+  document.getElementById('answer').value = '';
+  document.getElementById('feedback').innerText = '';
+  updateQuizUI();
+}
+
+function updateQuizUI(){
+  document.getElementById('quizCorrect').innerText = quizState.correct;
+  document.getElementById('quizWrong').innerText = quizState.wrong;
+  document.getElementById('quizTotal').innerText = quizState.total;
+  const rate = quizState.total ? Math.round((quizState.correct / quizState.total) * 100) : 0;
+  document.getElementById('quizRate').innerText = rate + '%';
+  document.getElementById('totalCorrect').innerText = state.totalCorrect || 0;
+  document.getElementById('totalWrong').innerText = state.totalWrong || 0;
+  updateTopInfo();
+  renderList();
+}
+
+/* ============================
+  Helpers
+  ============================ */
+function escapeHtml(s){ if(!s) return ''; return s.replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":"&#39;"}[c])); }
+
+function accuracyOf(entry){
+  const c = entry.stats.correct || 0;
+  const w = entry.stats.wrong || 0;
+  const t = c + w;
+  return t ? (c / t) * 100 : 0;
+}
+
+/* ============================
+  Inicialização
+  ============================ */
+(function init(){
+  // ensure state shape
+  state = Object.assign(defaultState(), state);
+  state.words = state.words || [];
+  state.words.forEach(w => { w.stats = w.stats || {correct:0,wrong:0,lastPracticed:null}; if(typeof w.seen !== 'boolean') w.seen = false; });
+  saveState();
+  renderList();
+})();
+
+</script>
+</body>
+</html>
