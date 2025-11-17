@@ -1,0 +1,2347 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Japonês — v4.7 (Busca Kanji, SRS L0, Pronúncia Corrigida)</title> <style>
+/* ===== Theme / Reset (based on previous look) ===== */
+:root{
+  --bg1:#041025; --bg2:#022033; --panel:#071827; --card:#0b2740; --muted:#99b0c6;
+  --accent1:#5fb0ff; --accent2:#b58bff; --success:#18d39b; --danger:#ff6b6b;
+  --gold1:#ffd66b; --gold2:#ffb84d; --glass: rgba(255,255,255,0.03); --radius:12px; --sidebarW:220px;
+  font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial;
+}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0;padding:0;background:linear-gradient(180deg,var(--bg1),var(--bg2));background-attachment:fixed;color:#eaf4ff;-webkit-font-smoothing:antialiased;overflow-x:hidden;}
+a{color:inherit;text-decoration:none}
+
+/* Sidebar */
+.sidebar{position:fixed;top:0;left:0;bottom:0;width:var(--sidebarW);background:var(--panel);box-shadow:2px 0 5px rgba(0,0,0,0.2);padding:20px;z-index:100;}
+.sidebar h1{color:var(--accent1);margin-top:0;font-size:24px;border-bottom:1px solid var(--card);padding-bottom:10px;margin-bottom:15px;}
+.sidebar-links a{display:block;padding:10px 15px;margin-bottom:5px;border-radius:var(--radius);transition:background-color 0.2s;}
+.sidebar-links a:hover,.sidebar-links a.active{background-color:var(--card);color:var(--accent2);font-weight:600;}
+.sidebar-links a i{margin-right:8px;}
+.level-info{margin-top:20px;padding:10px;background:var(--card);border-radius:var(--radius);text-align:center;}
+.level-info .level-bar{height:10px;background:#444;border-radius:5px;margin-top:5px;overflow:hidden;}
+.level-info .level-progress{height:100%;background:linear-gradient(90deg,var(--accent2),var(--accent1));transition:width 0.3s ease-out;}
+.xp-label{font-size:12px;color:var(--muted);margin-top:5px;}
+
+/* Main Content */
+.main-content{margin-left:var(--sidebarW);padding:20px;min-height:100vh;}
+.tab-content{display:none;}
+.tab-content.active{display:block;}
+
+/* Cards and Forms */
+.card{background:var(--card);padding:20px;border-radius:var(--radius);margin-bottom:20px;box-shadow:0 4px 6px rgba(0,0,0,0.1);}
+.card h2{margin-top:0;border-bottom:1px solid var(--panel);padding-bottom:10px;margin-bottom:15px;color:var(--accent2);}
+.form-group{margin-bottom:15px;}
+.form-group label{display:block;margin-bottom:5px;font-weight:600;}
+.form-group input,.form-group textarea,.form-group select{width:100%;padding:10px;border:1px solid var(--panel);border-radius:var(--radius);background-color:var(--bg1);color:inherit;resize:vertical;}
+.form-group textarea{min-height:80px;}
+.btn{display:inline-block;padding:10px 20px;border:none;border-radius:var(--radius);cursor:pointer;font-weight:600;transition:opacity 0.2s;}
+.btn-primary{background-color:var(--accent1);color:var(--bg1);}
+.btn-secondary{background-color:var(--muted);color:var(--bg1);}
+.btn-success{background-color:var(--success);color:var(--bg1);}
+.btn-danger{background-color:var(--danger);color:#fff;}
+.btn:hover{opacity:0.8;}
+.btn + .btn{margin-left:10px;}
+
+/* Dictionary List */
+.word-list{list-style:none;padding:0;}
+.word-item{background:var(--panel);border-radius:var(--radius);margin-bottom:10px;padding:15px;display:flex;justify-content:space-between;align-items:center;border-left:5px solid var(--accent1); position: relative; /* <-- CORREÇÃO ADICIONADA AQUI */}
+.word-item.seen{opacity:0.6;border-left-color:var(--muted);} 
+.word-item .word-details{flex-grow:1;}
+.word-item .word-text{font-size:1.2em;font-weight:700;color:var(--accent2);}
+.word-item .word-translation{color:var(--muted);}
+.word-item .srs-level-tag{
+    display:inline-block;margin-left:10px;font-size:0.8em;padding:3px 8px;border-radius:8px;font-weight:600;
+    background-color:var(--accent2);color:var(--bg1);
+}
+.word-item .srs-level-tag.srs-0{background-color:var(--muted);color:var(--bg1);}
+.word-item .srs-level-tag.srs-5{background-color:var(--gold1);color:var(--bg1);}
+
+.word-item .word-meta span{display:inline-block;margin-left:10px;font-size:0.8em;padding:3px 8px;border-radius:8px;font-weight:600;}
+.word-item .word-meta .jlpt-tag{background-color:var(--accent1);color:var(--bg1);}
+.word-item .word-meta .cat-tag{background-color:var(--success);color:var(--bg1);}
+.word-actions button{background:none;border:none;color:var(--muted);cursor:pointer;margin-left:8px;font-size:1.1em;}
+.word-actions button:hover{color:var(--accent1);}
+
+/* Alfabetos / Kanji */
+.alphabet-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(70px,1fr));gap:5px;text-align:center;margin-bottom:15px;}
+.char-container{background:var(--card);padding:10px 5px;border-radius:8px;position:relative;transition:all 0.3s;}
+.char-main{font-size:1.8em;font-weight:700;color:var(--accent1);margin-bottom:3px;}
+.char-romaji{font-size:0.7em;color:var(--muted);}
+.kanji-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(100px,1fr));gap:10px;}
+.kanji-card{background:var(--card);padding:15px;border-radius:var(--radius);text-align:center;position:relative;transition:all 0.3s;border: 1px solid var(--card);}
+.kanji-card .kanji-char{font-size:2.5em;font-weight:700;color:var(--accent2);}
+.kanji-card .kanji-meaning{font-size:0.8em;color:var(--muted);margin-top:5px;}
+
+/* Estilos para a Proficiência (Compartilhado entre Kana, Kanji E AGORA PALAVRAS) */
+.char-container.char-silver, .kanji-card.char-silver, .word-item.char-silver {
+  border: 2px solid var(--muted);
+  background-color: rgba(153, 176, 198, 0.1); 
+  box-shadow: 0 0 10px rgba(153, 176, 198, 0.3);
+}
+
+.char-container.char-gold, .kanji-card.char-gold, .word-item.char-gold {
+  border: 3px solid var(--gold1);
+  background-color: rgba(255, 214, 107, 0.1); 
+  box-shadow: 0 0 15px var(--gold2);
+}
+
+/* Garante que o texto principal da palavra fique na cor ouro */
+.word-item.char-gold .word-text {
+  color: var(--gold1);
+}
+
+/* Adicionando o ícone de domínio (Estrela ou Troféu) */
+.char-container:after, .kanji-card:after, .word-item:after {
+  content: '';
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  font-size: 10px;
+}
+.char-container.char-silver:after, .kanji-card.char-silver:after, .word-item.char-silver:after {
+  content: '★';
+  color: var(--muted);
+}
+.char-container.char-gold:after, .kanji-card.char-gold:after, .word-item.char-gold:after {
+  content: '🏆';
+  color: var(--gold1);
+}
+
+/* Conquistas (ATUALIZADO) */
+.achievement-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:15px;}
+.achievement-card{
+    background:var(--panel);padding:15px;border-radius:var(--radius);text-align:center;opacity:0.7;
+    transition:opacity 0.3s,border 0.3s,box-shadow 0.3s;
+    display: flex; flex-direction: column; justify-content: space-between;
+    min-height: 150px; /* Garante altura mínima para uniformidade */
+}
+.achievement-card.unlocked{opacity:1;border:2px solid var(--gold1);box-shadow:0 0 10px var(--gold2);}
+.achievement-card i{font-size:2em;margin-bottom:5px;color:var(--muted);}
+.achievement-card.unlocked i{color:var(--gold1);}
+.achievement-card h4{margin:5px 0 0;font-size:1em;color:#fff;}
+.achievement-card .ach-desc{margin: 0; font-size: 0.8em; color: var(--muted); flex-grow: 1; display: flex; align-items: center; justify-content: center; padding: 5px 0;}
+.achievement-card .ach-progress{margin: 0; font-size: 0.9em; font-weight: 700;}
+.achievement-card.unlocked .ach-progress{color: var(--success);}
+
+
+/* Modals */
+.modal-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background-color:rgba(0,0,0,0.7);z-index:1000;display:none;justify-content:center;align-items:center;overflow-y:auto;}
+.modal-overlay.active{display:flex;}
+.modal-content{background:var(--bg1);padding:30px;border-radius:var(--radius);width:90%;max-width:500px;box-shadow:0 5px 15px rgba(0,0,0,0.3);border:1px solid var(--panel);margin: 20px 0;}
+.modal-content h3{margin-top:0;color:var(--accent2);border-bottom:1px solid var(--panel);padding-bottom:10px;margin-bottom:15px;}
+
+/* Quiz Modal Specific */
+#quiz-question-text{font-size:2em;font-weight:700;text-align:center;margin-bottom:20px;color:var(--accent1);}
+#quiz-translation-hint{color:var(--muted);text-align:center;margin-bottom:10px;font-style:italic;}
+#quiz-answer-input{width:100%;padding:15px;font-size:1.2em;border:2px solid var(--panel);border-radius:var(--radius);background-color:var(--card);color:inherit;text-align:center;}
+#quiz-feedback{text-align:center;margin-top:15px;font-weight:700;min-height:20px;}
+
+/* Toggle Switch */
+.toggle-switch-container{display:flex;justify-content:space-between;align-items:center;margin-top:10px;}
+.toggle-label{font-weight:400;margin-right:15px;margin-bottom: 0;}
+.switch{position:relative;display:inline-block;width:40px;height:24px;}
+.switch input{opacity:0;width:0;height:0;}
+.slider{position:absolute;cursor:pointer;top:0;left:0;right:0;bottom:0;background-color:var(--muted);transition:.4s;}
+.slider:before{position:absolute;content:"";height:16px;width:16px;left:4px;bottom:4px;background-color:white;transition:.4s;}
+input:checked + .slider{background-color:var(--success);}
+input:checked + .slider:before{-webkit-transform:translateX(16px);-ms-transform:translateX(16px);transform:translateX(16px);}
+.slider.round{border-radius:24px;}
+.slider.round:before{border-radius:50%;}
+
+/* Notifications (XP Flyout) */
+.notif-container{position:fixed;top:20px;right:20px;z-index:2000;display:flex;flex-direction:column-reverse;pointer-events:none;}
+.xp-flyout{
+    background:var(--success); color:#fff; padding:15px 20px; border-radius:var(--radius); 
+    margin-top:10px; box-shadow:0 4px 12px rgba(0,0,0,0.3); opacity:0; 
+    transform:translateX(100%); 
+    transition:all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94); 
+    min-width: 250px; display: flex; align-items: center; pointer-events: auto;
+    border: 1px solid rgba(255,255,255,0.1);
+}
+.xp-flyout.active{opacity:1; transform:translateX(0);}
+
+.xp-flyout.level-up{
+    background:linear-gradient(90deg, var(--accent2), var(--accent1));
+}
+.xp-flyout.achievement{
+    background:linear-gradient(135deg, var(--gold1), var(--gold2));
+    color:var(--bg1); font-weight:700; border: 2px solid var(--gold1);
+}
+
+.xp-flyout .icon{font-size: 1.8em; margin-right: 15px; flex-shrink: 0;}
+.xp-flyout .content{flex-grow: 1;}
+.xp-flyout .title{font-weight: 800; margin-bottom: 2px;}
+.xp-flyout .message{font-size: 0.9em; font-weight: 500;}
+
+
+/* Confetti/Particle CSS */
+.confetti-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 5000;
+    overflow: hidden;
+}
+.confetti {
+    position: absolute;
+    width: 8px;
+    height: 16px;
+    opacity: 0;
+    animation: confetti-fall 3s ease-in-out forwards;
+    transform-origin: bottom center;
+}
+
+@keyframes confetti-fall {
+    0% { transform: translate(var(--x-start), var(--y-start)) rotate(0deg); opacity: 1;
+    }
+    100% { transform: translate(var(--x-end), calc(100vh + 50px)) rotate(720deg); opacity: 0;
+    }
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .sidebar{position:static;width:100%;height:auto;padding:10px 20px;}
+  .sidebar-links{display:flex;flex-wrap:wrap;justify-content:space-around;gap:5px;}
+  .sidebar-links a{flex-grow:1;text-align:center;padding:8px 5px;margin-bottom:0;}
+  .main-content{margin-left:0;padding:10px;}
+  .word-item{flex-direction:column;align-items:flex-start;}
+  .word-item .word-meta{margin-top:10px;}
+  .word-actions{margin-top:10px;width:100%;text-align:right;}
+  .xp-flyout{right: 10px; left: 10px; min-width: auto; transform: translateY(-100%);}
+  .xp-flyout.active{transform: translateY(0);}
+
+  #dict .card .form-group .btn {
+    padding: 8px 12px;
+    font-size: 0.9em;
+    /* text-align: left; - Removido pois o Flexbox faz um trabalho melhor */
+    
+    /* V3.8.7: Correções Definitivas de Alinhamento */
+    display: flex;
+    align-items: center; 
+    justify-content: flex-start; 
+    
+    /* ANULA QUALQUER MARGEM OU INDENTAÇÃO QUE POSSA ESTAR CAUSANDO O DESALINHAMENTO */
+    margin-left: 0 !important; /* Força margem esquerda zero */
+    text-indent: 0; /* Remove qualquer indentação de texto residual */
+  }
+  
+  /* Se o ícone e o texto estiverem grudados, adicione este bloco para espaço */
+  #dict .card .form-group .btn i {
+    margin-right: 8px; 
+    /* V3.8.7: Garante que o ícone não tenha padding/margin extra na esquerda */
+    margin-left: 0;
+    padding-left: 0;
+  }
+  
+  #dict .card .form-group {
+    display: flex;
+    flex-direction: column; 
+    align-items: stretch; /* Garante que os botões tenham 100% de largura */
+  }
+  #dict .card .form-group .btn:first-child {
+    margin-bottom: 10px; 
+  }
+}
+</style>
+</head>
+<body>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+<div class="sidebar">
+  <h1>Jap-Dex <span style="font-size: 12px; opacity: 0.6;">v4.7</span></h1>
+    <div class="level-info">
+    <div id="level-display">Level 1</div>
+    <div class="level-bar"><div id="xp-progress" class="level-progress" style="width: 0%;"></div></div>
+    <div id="xp-label" class="xp-label">0 XP / 100 XP</div>
+  </div>
+
+  <div class="sidebar-links" id="sidebar-links">
+    <a href="#" onclick="switchTab('dict', this);"><i class="fas fa-book"></i> Dicionário</a>
+    <a href="#" onclick="switchTab('alphabets', this);"><i class="fas fa-sort-alpha-down"></i> Alfabetos</a>
+    <a href="#" onclick="switchTab('achievements', this);"><i class="fas fa-trophy"></i> Conquistas</a>
+    <a href="#" onclick="switchTab('stats', this);"><i class="fas fa-chart-bar"></i> Estatísticas</a>
+    <a href="#" onclick="switchTab('settings', this);"><i class="fas fa-cog"></i> Configurações</a> </div>
+</div>
+
+<div class="main-content">
+  <div id="dict" class="tab-content active">
+    <div class="card">
+      <h2>Adicionar Nova Palavra</h2>
+      <form id="add-word-form">
+        <div class="form-group"><label for="word-text">Palavra (Kanji/Kana):</label><input type="text" id="word-text" required></div>
+        <div class="form-group"><label for="word-reading">Leitura (Furigana/Kana):</label><input type="text" id="word-reading" required></div>
+        <div class="form-group"><label for="word-translation">Tradução (Português):</label><input type="text" id="word-translation" required></div>
+        <div class="form-group">
+          <label for="word-jlpt">Nível JLPT (XP Bônus):</label>
+          <select id="word-jlpt">
+            <option value="N5">N5 (Fácil)</option><option value="N4">N4</option><option value="N3">N3</option>
+            <option value="N2">N2</option><option value="N1">N1 (Difícil)</option><option value="None" selected>Nenhum</option>
+          </select>
+        </div>
+        <div class="form-group"><label for="word-category">Categoria (ex: Verbo, Substantivo, Animais...):</label><input type="text" id="word-category"></div>
+        <div class="form-group"><label for="word-tags">Tags (separadas por vírgula):</label><input type="text" id="word-tags"></div>
+        <div class="form-group"><label for="word-notes">Notas:</label><textarea id="word-notes"></textarea></div>
+        <button type="submit" class="btn btn-primary">Adicionar Palavra</button>
+        <button type="button" class="btn btn-secondary" onclick="clearForm('add-word-form')">Limpar</button>
+      </form>
+    </div>
+
+    <div class="card" id="srs-status-card">
+      <h2>Revisão Espaçada (SRS)</h2>
+      <p style="margin-bottom: 10px;"><strong>Palavras prontas para Revisão:</strong> <span id="srs-review-count" style="font-weight: 700; color: var(--gold1);">0</span></p>
+      <button class="btn btn-primary" onclick="openQuizModal('voc')"><i class="fas fa-redo"></i> Iniciar Revisão (Prioriza SRS)</button>
+    </div>
+
+    <div class="card">
+      <h2>Lista de Palavras (<span id="word-count">0</span>)</h2>
+      <div class="form-group" style="display:flex;gap:10px;">
+        <input type="text" id="search-input" placeholder="Buscar" onkeyup="renderList()">
+        <select type="text" id="filter-jlpt" onchange="renderList()">
+          <option value="">Todos JLPT</option>
+          <option value="N5">N5</option><option value="N4">N4</option><option value="N3">N3</option>
+          <option value="N2">N2</option><option value="N1">N1</option><option value="None">Nenhum</option>
+        </select>
+        <select id="filter-category" onchange="renderList()">
+          <option value="">Todas Categorias</option>
+        </select>
+      </div>
+	  <div class="form-group" style="margin-top: 15px;">
+		<button class="btn btn-secondary" onclick="toggleAllWordsSeen(true)"><i class="fas fa-eye"></i> Visualizar Todas</button>
+		<button class="btn btn-secondary" onclick="toggleAllWordsSeen(false)"><i class="fas fa-eye-slash"></i> Remover Visualizações</button>
+	  </div>
+      <ul id="word-list" class="word-list">
+        </ul>
+    </div>
+  </div>
+
+  <div id="alphabets" class="tab-content">
+    <div class="card">
+      <h2>Hiragana</h2>
+      <div id="hiragana-grid" class="alphabet-grid"></div>
+      <button class="btn btn-success" onclick="openQuizModal('hiragana')"><i class="fas fa-h-square"></i> Iniciar Quiz de Hiragana</button>
+    </div>
+    
+    <div class="card">
+      <h2>Katakana</h2>
+      <div id="katakana-grid" class="alphabet-grid"></div>
+      <button class="btn btn-success" onclick="openQuizModal('katakana')"><i class="fas fa-k-square"></i> Iniciar Quiz de Katakana</button>
+    </div>
+
+    <div class="card">
+      <h2>Kanji Pessoais (<span id="kanji-count">0</span>)</h2>
+      <form id="add-kanji-form">
+        <div class="form-group"><label for="kanji-char">Kanji:</label><input type="text" id="kanji-char" maxlength="1" required></div>
+        <div class="form-group"><label for="kanji-meaning">Significado(s):</label><input type="text" id="kanji-meaning" required></div>
+        <div class="form-group"><label for="kanji-reading-on">Leitura On'yomi:</label><input type="text" id="kanji-reading-on"></div>
+        <div class="form-group"><label for="kanji-reading-kun">Leitura Kun'yomi:</label><input type="text" id="kanji-reading-kun"></div>
+        <button type="submit" class="btn btn-primary">Adicionar Kanji</button>
+        <button type="button" class="btn btn-secondary" onclick="clearForm('add-kanji-form')">Limpar</button>
+      </form>
+      <div class="form-group" style="margin-top: 20px;">
+        <input type="text" id="kanji-search-input" placeholder="Buscar Kanji ou Significado..." onkeyup="renderAlphabets()">
+      </div>
+      <div id="kanji-grid" class="kanji-grid" style="margin-top: 20px;"></div>
+      <button class="btn btn-success" onclick="openQuizModal('kanji')"><i class="fas fa-sign"></i> Iniciar Quiz de Kanji</button>
+    </div>
+  </div>
+
+  <div id="achievements" class="tab-content">
+    <div class="card">
+      <h2>Minhas Conquistas (<span id="unlocked-achievements-count">0</span> / <span id="total-achievements-count">0</span>)</h2>
+      <div id="achievement-grid" class="achievement-grid">
+        </div>
+    </div>
+  </div>
+  
+  <div id="stats" class="tab-content">
+    <div class="card">
+      <h2>Estatísticas Gerais</h2>
+      <p><strong>Total de Palavras:</strong> <span id="stat-words">0</span></p>
+      <p><strong>Total de Kanji Pessoais:</strong> <span id="stat-kanji">0</span></p>
+      <p><strong>Conquistas Desbloqueadas:</strong> <span id="stat-achievements">0</span></p>
+      <p><strong>Categorias Únicas Registradas:</strong> <span id="stat-categories">0</span></p>
+      <p><strong>XP Total:</strong> <span id="stat-xp">0</span></p>
+    </div>
+  </div>
+  
+  <div id="settings" class="tab-content">
+    <div class="card">
+      <h2>Quiz de Vocabulário</h2>
+      <p>Inicie o treino de vocabulário:</p>
+      <button class="btn btn-primary" onclick="openQuizModal('voc')"><i class="fas fa-graduation-cap"></i> Vocabulário</button>
+      <p style="margin-top:15px; font-size:0.9em; color:var(--muted);">Os quizzes de Alfabetos/Kanji estão na aba "Alfabetos".</p>
+    </div>
+    
+    <div class="card">
+      <h2>Configurações e Manutenção</h2>
+      <h3 style="margin-top:20px;">Backup de Dados</h3>
+      <button class="btn btn-primary" onclick="exportJSON()"><i class="fas fa-download"></i> Exportar JSON</button>
+      <button class="btn btn-secondary" onclick="document.getElementById('import-input').click()"><i class="fas fa-upload"></i> Importar JSON</button>
+      <input type="file" id="import-input" accept="application/json" style="display:none;" onchange="importJSON(event)">
+      <p style="margin-top:10px; font-size:0.9em; color:var(--muted);">Importar pode MESCLAR ou SUBSTITUIR os dados atuais. Cuidado.</p>
+    
+      <h3 style="margin-top:20px;">Configurações</h3>
+      <div class="form-group toggle-switch-container">
+        <label for="setting-sound" class="toggle-label">Desativar Sons (XP, Level Up, Conquista)</label>
+        <label class="switch">
+          <input type="checkbox" id="setting-sound">
+          <span class="slider round"></span>
+        </label>
+      </div>
+
+      <h3 style="margin-top:20px; color: var(--danger);">Resetar Progresso</h3>
+      <p style="color:var(--muted);">Esta ação irá apagar TODOS os seus dados salvos (palavras, XP, estatísticas). É irreversível.</p>
+      <button class="btn btn-danger" onclick="resetProgress()"><i class="fas fa-trash-alt"></i> Resetar Progresso</button>
+    </div>
+  </div>
+
+</div>
+
+<div id="quiz-modal" class="modal-overlay">
+  <div class="modal-content">
+    <h3 id="quiz-title">Quiz de Vocabulário</h3>
+    <div id="quiz-question-container">
+      <div id="quiz-question-text">Pergunta</div>
+      <div id="quiz-translation-hint">Dica (Tradução)</div>
+      <input type="text" id="quiz-answer-input" placeholder="Sua resposta..." onkeydown="if(event.key==='Enter') document.getElementById('quiz-submit-btn').click();">
+      <div id="quiz-feedback"></div>
+    </div>
+    <div style="text-align:right; margin-top:20px;">
+      <button class="btn btn-secondary" onclick="closeQuizModal()">Fechar</button>
+      <button id="quiz-submit-btn" class="btn btn-primary" onclick="checkModalAnswer()">Verificar</button>
+      <button id="quiz-next-btn" class="btn btn-success" style="display:none;" onclick="modalNext()">Próxima</button>
+    </div>
+  </div>
+</div>
+
+<div id="edit-word-modal" class="modal-overlay">
+  <div class="modal-content">
+    <h3>Editar Palavra</h3>
+    <form id="edit-word-form">
+      <input type="hidden" id="edit-word-id">
+      <div class="form-group"><label for="edit-word-text">Palavra (Kanji/Kana):</label><input type="text" id="edit-word-text" required></div>
+      <div class="form-group"><label for="edit-word-reading">Leitura (Furigana/Kana):</label><input type="text" id="edit-word-reading" required></div>
+      <div class="form-group"><label for="edit-word-translation">Tradução (Português):</label><input type="text" id="edit-word-translation" required></div>
+      <div class="form-group">
+        <label for="edit-word-jlpt">Nível JLPT (XP Bônus):</label>
+        <select id="edit-word-jlpt">
+          <option value="N5">N5 (Fácil)</option><option value="N4">N4</option><option value="N3">N3</option>
+          <option value="N2">N2</option><option value="N1">N1 (Difícil)</option><option value="None" selected>Nenhum</option>
+        </select>
+      </div>
+      <div class="form-group"><label for="edit-word-category">Categoria (ex: Verbo, Substantivo, Animais...):</label><input type="text" id="edit-word-category"></div>
+      <div class="form-group"><label for="edit-word-tags">Tags (separadas por vírgula):</label><input type="text" id="edit-word-tags"></div>
+      <div class="form-group"><label for="edit-word-notes">Notas:</label><textarea id="edit-word-notes"></textarea></div>
+      <div style="text-align:right; margin-top:20px;">
+        <button type="button" class="btn btn-secondary" onclick="closeEditModal()">Cancelar</button>
+        <button type="submit" class="btn btn-primary">Salvar Alterações</button>
+      </div>
+    </form>
+  </div>
+</div>
+<div id="edit-kanji-modal" class="modal-overlay">
+  <div class="modal-content">
+    <h3>Editar Kanji Pessoal</h3>
+    <form id="edit-kanji-form">
+      <input type="hidden" id="edit-kanji-id">
+      <div class="form-group"><label for="edit-kanji-char">Kanji:</label><input type="text" id="edit-kanji-char" maxlength="1" required></div>
+      <div class="form-group"><label for="edit-kanji-meaning">Significado(s):</label><input type="text" id="edit-kanji-meaning" required></div>
+      <div class="form-group"><label for="edit-kanji-reading-on">Leitura On'yomi:</label><input type="text" id="edit-kanji-reading-on"></div>
+      <div class="form-group"><label for="edit-kanji-reading-kun">Leitura Kun'yomi:</label><input type="text" id="edit-kanji-reading-kun"></div>
+      <div style="text-align:right; margin-top:20px;">
+        <button type="button" class="btn btn-secondary" onclick="closeKanjiEditModal()">Cancelar</button>
+        <button type="submit" class="btn btn-primary">Salvar Alterações</button>
+      </div>
+    </form>
+  </div>
+</div>
+<div class="notif-container" id="notif-container"></div>
+<div class="confetti-container" id="confetti-container"></div> <script>
+/* ===== CONSTANTS / DATA (ATUALIZADO PARA INCLUIR THRESHOLDS DE PALAVRAS) ===== */
+const STORAGE_KEY = 'jp_app_v4_0'; 
+const ALPHA_SILVER_THRESHOLD = 3; 
+const ALPHA_GOLD_THRESHOLD = 5;   
+const WORD_SILVER_THRESHOLD = 3; // Adicionado como constante global (Ponto 3)
+const WORD_GOLD_THRESHOLD = 6; // Adicionado como constante global (Ponto 3)
+
+const XP_BY_JLPT = { 'N5': 20, 'N4': 30, 'N3': 40, 'N2': 
+50, 'N1': 60, 'None': 10 };
+const QUIZ_XP_BY_JLPT = { 'N5': 10, 'N4': 15, 'N3': 20, 'N2': 25, 'N1': 30, 'None': 5, 'hiragana': 2, 
+'katakana': 2, 'kanji': 5 };
+
+// INTERVALOS DE REVISÃO SRS (em dias)
+const SRS_INTERVALS = [
+    { level: 0, days: 0 },   
+    { level: 1, days: 1 }, 
+    { level: 2, days: 3 },
+    { level: 3, days: 7 },
+    { level: 4, days: 15 },
+    { level: 5, days: 30 },
+    { level: 
+6, days: 60 }, 
+];
+const LEVELS = [
+  { level: 1, xp: 0 }, { level: 2, xp: 100 }, { level: 3, xp: 250 }, { level: 4, xp: 450 }, { level: 5, xp: 700 },
+  { level: 6, xp: 1000 }, { level: 7, xp: 1350 }, { level: 8, xp: 1750 }, { level: 9, xp: 2200 }, { level: 10, xp: 2700 },
+  { level: 11, xp: 3300 }, { level: 12, xp: 4000 }, { level: 13, xp: 4800 }, { level: 14, xp: 5700 }, { level: 15, xp: 
+6700 },
+  { level: 16, xp: 7800 }, { level: 17, xp: 9000 }, { level: 18, xp: 10300 }, { level: 19, xp: 11700 }, { level: 20, xp: 13200 },
+  { level: 21, xp: 14800 }, { level: 22, xp: 16500 }, { level: 23, xp: 18300 }, { level: 24, xp: 20200 }, { level: 25, xp: 22200 },
+  { level: 26, xp: 24300 }, { level: 27, xp: 26500 }, { level: 28, xp: 28800 }, { level: 29, xp: 31200 }, { level: 30, xp: 33700 },
+];
+const ACHIEVEMENTS = [
+    // Palavras (Type: word) - 5
+    { id: 'word_10', name: 'Aprendiz de Palavras', desc: 'Adicione 10 palavras ao dicionário.', type: 'word', value: 10, current: 0, unlocked: false, icon: 'fas fa-feather' },
+    { id: 'word_50', name: 'Vocabulário Básico', desc: 'Adicione 50 palavras ao dicionário.', type: 'word', value: 50, current: 0, unlocked: false, icon: 'fas fa-graduation-cap' },
+    { id: 'word_100', name: 'Lexicógrafo Júnior', desc: 'Adicione 100 palavras ao dicionário.', type: 'word', value: 100, current: 0, unlocked: false, icon: 'fas fa-atlas' },
+    { id: 'word_250', name: 'Ampliando o Léxico', desc: 'Adicione 250 palavras ao dicionário.', type: 'word', value: 250, current: 0, unlocked: false, icon: 'fas fa-globe-asia' },
+    { id: 'word_500', name: 'Mestre Lexicógrafo', desc: 'Adicione 500 palavras ao dicionário.', type: 'word', value: 500, current: 0, unlocked: false, icon: 'fas fa-scroll' },
+
+    // Nível de Usuário (Type: level) - 7
+    { id: 'lvl_2', name: 'Começando a Jornada', desc: 'Alcance o nível 2.', type: 'level', value: 2, current: 0, unlocked: false, icon: 'fas fa-leaf' },
+    { id: 'lvl_5', name: 'Nível Intermediário', desc: 'Alcance o nível 5.', type: 'level', value: 5, current: 0, unlocked: false, icon: 'fas fa-star-half-alt' },
+    { id: 'lvl_10', name: 'Atingindo o Primeiro Marco', desc: 'Alcance o nível 10.', type: 'level', value: 10, current: 0, unlocked: false, icon: 'fas fa-star' },
+    { id: 'lvl_20', name: 'Jornada Avançada', desc: 'Alcance o nível 20.', type: 'level', value: 20, current: 0, unlocked: false, icon: 'fas fa-route' },
+    { id: 'lvl_30', name: 'Mestre Iniciante', desc: 'Alcance o nível 30.', type: 'level', value: 30, current: 0, unlocked: false, icon: 'fas fa-trophy' },
+    { id: 'lvl_40', name: 'Desbravador Nível 40', desc: 'Alcance o nível 40.', type: 'level', value: 40, current: 0, unlocked: false, icon: 'fas fa-city' }, // NOVO
+    { id: 'lvl_50', name: 'Meio-Caminho para o Mestre', desc: 'Alcance o nível 50.', type: 'level', value: 50, current: 0, unlocked: false, icon: 'fas fa-monument' }, // NOVO
+
+    // Kanji (Type: kanji) - 5
+    { id: 'kanji_1', name: 'Primeiro Símbolo', desc: 'Adicione 1 Kanji pessoal.', type: 'kanji', value: 1, current: 0, unlocked: false, icon: 'fas fa-pen-nib' },
+    { id: 'kanji_5', name: 'Colecionador de Símbolos', desc: 'Adicione 5 Kanji pessoais.', type: 'kanji', value: 5, current: 0, unlocked: false, icon: 'fas fa-stream' },
+    { id: 'kanji_10', name: 'Kanji Básico', desc: 'Adicione 10 Kanji pessoais.', type: 'kanji', value: 10, current: 0, unlocked: false, icon: 'fas fa-sign' },
+    { id: 'kanji_20', name: 'Kanji Intermediário', desc: 'Adicione 20 Kanji pessoais.', type: 'kanji', value: 20, current: 0, unlocked: false, icon: 'fas fa-mountain' },
+    { id: 'kanji_50', name: 'Kanji Avançado', desc: 'Adicione 50 Kanji pessoais.', type: 'kanji', value: 50, current: 0, unlocked: false, icon: 'fas fa-dragon' },
+
+    // Quizzes (Type: quiz) - 5
+    { id: 'quiz_10', name: 'Primeiro Teste', desc: 'Complete 10 quizzes (qualquer tipo).', type: 'quiz', value: 10, current: 0, unlocked: false, icon: 'fas fa-dice-one' },
+    { id: 'quiz_50', name: 'Estudante Dedicado', desc: 'Complete 50 quizzes.', type: 'quiz', value: 50, current: 0, unlocked: false, icon: 'fas fa-laptop-code' },
+    { id: 'quiz_100', name: 'Veterano do Quiz', desc: 'Complete 100 quizzes.', type: 'quiz', value: 100, current: 0, unlocked: false, icon: 'fas fa-brain' },
+    { id: 'quiz_500', name: 'Maratonista de Estudo', desc: 'Complete 500 quizzes.', type: 'quiz', value: 500, current: 0, unlocked: false, icon: 'fas fa-running' },
+    { id: 'quiz_1000', name: 'Mestre dos Quizzes', desc: 'Complete 1000 quizzes.', type: 'quiz', value: 1000, current: 0, unlocked: false, icon: 'fas fa-medal' },
+
+    // Categorias Únicas (Type: category) - 2
+    { id: 'category_1', name: 'Primeira Etiqueta', desc: 'Use 1 categoria única para uma palavra.', type: 'category', value: 1, current: 0, unlocked: false, icon: 'fas fa-tag' },
+    { id: 'category_5', name: 'Organizador de Conteúdo', desc: 'Use 5 categorias únicas.', type: 'category', value: 5, current: 0, unlocked: false, icon: 'fas fa-tags' },
+
+    // JLPT (Type: jlpt) - Adicionar N palavras de um determinado nível - 5
+    { id: 'jlpt_n5', name: 'N5 Iniciante', desc: 'Adicione 5 palavras com o nível N5.', type: 'jlpt', value: 5, current: 0, unlocked: false, icon: 'fas fa-bicycle' },
+    { id: 'jlpt_n4', name: 'Rumo ao N4', desc: 'Adicione 5 palavras com o nível N4.', type: 'jlpt', value: 5, current: 0, unlocked: false, icon: 'fas fa-bus' },
+    { id: 'jlpt_n3', name: 'Desafiando o N3', desc: 'Adicione 5 palavras com o nível N3.', type: 'jlpt', value: 5, current: 0, unlocked: false, icon: 'fas fa-motorcycle' },
+    { id: 'jlpt_n2', name: 'Rumo ao N2', desc: 'Adicione 5 palavras com o nível N2.', type: 'jlpt', value: 5, current: 0, unlocked: false, icon: 'fas fa-car-side' },
+    { id: 'jlpt_n1', name: 'Quase Mestre', desc: 'Adicione 5 palavras com o nível N1.', type: 'jlpt', value: 5, current: 0, unlocked: false, icon: 'fas fa-plane' },
+
+    // Alfabetos - Proficiência Ouro (Type: hira_gold / kata_gold) - 4
+    { id: 'hira_10_gold', name: 'Hiragana Prata', desc: 'Obtenha proficiência Ouro em 10 caracteres Hiragana.', type: 'hira_gold', value: 10, current: 0, unlocked: false, icon: 'fas fa-star' },
+    { id: 'kata_10_gold', name: 'Katakana Prata', desc: 'Obtenha proficiência Ouro em 10 caracteres Katakana.', type: 'kata_gold', value: 10, current: 0, unlocked: false, icon: 'fas fa-star' },
+    { id: 'hira_30_gold', name: 'Hiragana Ouro', desc: 'Obtenha proficiência Ouro em 30 caracteres Hiragana.', type: 'hira_gold', value: 30, current: 0, unlocked: false, icon: 'fas fa-star-half-alt' },
+    { id: 'kata_30_gold', name: 'Katakana Ouro', desc: 'Obtenha proficiência Ouro em 30 caracteres Katakana.', type: 'kata_gold', value: 30, current: 0, unlocked: false, icon: 'fas fa-star-half-alt' },
+
+    /* === NOVAS CONQUISTAS DE PROFICIÊNCIA === */
+    // Proficiência de Palavras (Type: word_gold) - 4
+    { id: 'word_gold_10', name: 'Aprendiz Brilhante', desc: 'Obtenha Proficiência Ouro em 10 Palavras.', type: 'word_gold', value: 10, current: 0, unlocked: false, icon: 'fas fa-gem' },
+    { id: 'word_gold_50', name: 'Vocabulário Consolidado', desc: 'Obtenha Proficiência Ouro em 50 Palavras.', type: 'word_gold', value: 50, current: 0, unlocked: false, icon: 'fas fa-star-of-life' },
+    { id: 'word_gold_100', name: 'Mestre da Memorização', desc: 'Obtenha Proficiência Ouro em 100 Palavras.', type: 'word_gold', value: 100, current: 0, unlocked: false, icon: 'fas fa-lightbulb' },
+    { id: 'word_gold_250', name: 'Enciclopédia Pessoal', desc: 'Obtenha Proficiência Ouro em 250 Palavras.', type: 'word_gold', value: 250, current: 0, unlocked: false, icon: 'fas fa-book-reader' },
+
+    // Proficiência de Kanji (Type: kanji_gold) - 3
+    { id: 'kanji_gold_5', name: 'Estrutura Dourada', desc: 'Obtenha Proficiência Ouro em 5 Kanji Pessoais.', type: 'kanji_gold', value: 5, current: 0, unlocked: false, icon: 'fas fa-solar-panel' },
+    { id: 'kanji_gold_10', name: 'Dez Símbolos de Ouro', desc: 'Obtenha Proficiência Ouro em 10 Kanji Pessoais.', type: 'kanji_gold', value: 10, current: 0, unlocked: false, icon: 'fas fa-gavel' },
+    { id: 'kanji_gold_25', name: 'Kanji Refinado', desc: 'Obtenha Proficiência Ouro em 25 Kanji Pessoais.', type: 'kanji_gold', value: 25, current: 0, unlocked: false, icon: 'fas fa-yin-yang' },
+    
+    // Domínio de Alfabeto (Mastery) - 2 (Requer que TODOS os caracteres estejam em Ouro)
+    { id: 'hira_mastery', name: 'Hiragana Dominado', desc: 'Obtenha Proficiência Ouro em TODOS os caracteres Hiragana.', type: 'hira_mastery', value: 104, current: 0, unlocked: false, icon: 'fas fa-hand-spock' }, // O valor 104 deve corresponder a HIRAGANA_CHARS_FULL.length
+    { id: 'kata_mastery', name: 'Katakana Dominado', desc: 'Obtenha Proficiência Ouro em TODOS os caracteres Katakana.', type: 'kata_mastery', value: 104, current: 0, unlocked: false, icon: 'fas fa-hand-rock' }, // O valor 104 deve corresponder a KATAKANA_CHARS_FULL.length
+
+    /* === NOVAS CONQUISTAS DE CATEGORIA DE PALAVRA (cat_word_count) === */
+    // Categoria: Animais (Existente) - 2
+    { id: 'cat_anim_5', name: 'Amigo dos Animais', desc: 'Adicione 5 palavras com a categoria "Animais".', type: 'cat_word_count', value: 5, current: 0, unlocked: false, category_key: 'Animais', icon: 'fas fa-paw' },
+    { id: 'cat_anim_10', name: 'Zoólogo Amador', desc: 'Adicione 10 palavras com a categoria "Animais".', type: 'cat_word_count', value: 10, current: 0, unlocked: false, category_key: 'Animais', icon: 'fas fa-hippo' },
+
+    // Categoria: Cores - 2
+    { id: 'cat_color_5', name: 'Mestre Cromo', desc: 'Adicione 5 palavras com a categoria "Cores".', type: 'cat_word_count', value: 5, current: 0, unlocked: false, category_key: 'Cores', icon: 'fas fa-palette' },
+    { id: 'cat_color_10', name: 'Cromático Experiente', desc: 'Adicione 10 palavras com a categoria "Cores".', type: 'cat_word_count', value: 10, current: 0, unlocked: false, category_key: 'Cores', icon: 'fas fa-rainbow' },
+
+    // Categoria: Comida - 2
+    { id: 'cat_food_5', name: 'Apreciador de Sabores', desc: 'Adicione 5 palavras com a categoria "Comida".', type: 'cat_word_count', value: 5, current: 0, unlocked: false, category_key: 'Comida', icon: 'fas fa-utensils' },
+    { id: 'cat_food_10', name: 'Gourmet Lexical', desc: 'Adicione 10 palavras com a categoria "Comida".', type: 'cat_word_count', value: 10, current: 0, unlocked: false, category_key: 'Comida', icon: 'fas fa-pizza-slice' },
+
+    // Categoria: Lugares - 2
+    { id: 'cat_place_5', name: 'Turista Lexical', desc: 'Adicione 5 palavras com a categoria "Lugares".', type: 'cat_word_count', value: 5, current: 0, unlocked: false, category_key: 'Lugares', icon: 'fas fa-map-marked-alt' },
+    { id: 'cat_place_10', name: 'Geógrafo Amador', desc: 'Adicione 10 palavras com a categoria "Lugares".', type: 'cat_word_count', value: 10, current: 0, unlocked: false, category_key: 'Lugares', icon: 'fas fa-globe' },
+
+    /* Total: 5 + 7 + 5 + 5 + 2 + 5 + 4 + 3 + 2 + 2 + 2 + 2 + 2 = 50 Conquistas */
+];
+// Fim de ACHIEVEMENTS 
+// ARRAYS DE ALFABETO CONSOLIDADOS (INCLUINDO COMBINAÇÕES - PONTO 4)
+const HIRAGANA_CHARS = [ 'あ', 'い', 'う', 'え', 'お', 'か', 'き', 'く', 'け', 'こ', 'さ', 'し', 'す', 'せ', 'そ', 'た', 'ち', 'つ', 'て', 'と', 'な', 'に', 'ぬ', 'ね', 'の', 'は', 'ひ', 'ふ', 'へ', 'ほ', 'ま', 'み', 'む', 'め', 'も', 'や', 'ゆ', 'よ', 'ら', 'り', 'る', 'れ', 'ろ', 'わ', 'を', 'ん' ];
+const HIRAGANA_ROMANJI = [ 'a', 'i', 'u', 'e', 'o', 'ka', 'ki', 'ku', 'ke', 'ko', 'sa', 'shi', 'su', 'se', 'so', 'ta', 'chi', 'tsu', 'te', 'to', 'na', 'ni', 'nu', 'ne', 'no', 'ha', 'hi', 'fu', 'he', 'ho', 'ma', 'mi', 'mu', 'me', 'mo', 'ya', 'yu', 'yo', 'ra', 'ri', 'ru', 're', 'ro', 'wa', 'wo', 'n' ];
+const KATAKANA_CHARS = [ 'ア', 'イ', 'ウ', 'エ', 'オ', 'カ', 'キ', 'ク', 'ケ', 'コ', 'サ', 'シ', 'ス', 'セ', 'ソ', 'タ', 'チ', 'ツ', 'テ', 'ト', 'ナ', 'ニ', 'ヌ', 'ネ', 'ノ', 'ハ', 'ヒ', 'フ', 'ヘ', 'ホ', 'マ', 'ミ', 'ム', 'メ', 'モ', 'ヤ', 'ユ', 'ヨ', 'ラ', 'リ', 'ル', 'レ', 'ロ', 'ワ', 'ヲ', 'ン' ];
+const KATAKANA_ROMANJI = [ 'a', 'i', 'u', 'e', 'o', 'ka', 'ki', 'ku', 'ke', 'ko', 'sa', 'shi', 'su', 'se', 'so', 'ta', 'chi', 'tsu', 'te', 'to', 'na', 'ni', 'nu', 'ne', 'no', 'ha', 'hi', 'fu', 'he', 'ho', 'ma', 'mi', 'mu', 'me', 'mo', 'ya', 'yu', 'yo', 'ra', 'ri', 'ru', 're', 'ro', 'wa', 'wo', 'n' ];
+// Combinações (Dakuten, Handakuten, Yōon)
+const HIRA_COMBINATIONS_CHARS = [
+    // Dakuten
+    'が', 'ぎ', 'ぐ', 'げ', 'ご', 'ざ', 'じ', 'ず', 'ぜ', 'ぞ', 
+    'だ', 'ぢ', 'づ', 'で', 'ど', 'ば', 'び', 'ぶ', 'べ', 'ぼ',
+    // Handakuten
+    'ぱ', 'ぴ', 'ぷ', 'ぺ', 'ぽ',
+    // Yōon (Contracted)
+    'きゃ', 'きゅ', 'きょ', 'しゃ', 'しゅ', 'しょ', 'ちゃ', 'ちゅ', 'ちょ', 
+    'にゃ', 'にゅ', 'にょ', 'ひゃ', 'ひゅ', 'ひょ', 'みゃ', 'みゅ', 'みょ', 
+    'りゃ', 'りゅ', 'りょ', 'ぎゃ', 'ぎゅ', 'ぎょ', 'じゃ', 'じゅ', 'じょ', 
+   
+ 'びゃ', 'びゅ', 'びょ', 'ぴゃ', 'ぴゅ', 'ぴょ'
+];
+const HIRA_COMBINATIONS_ROMANJI = [
+    // Dakuten
+    'ga', 'gi', 'gu', 'ge', 'go', 'za', 'ji', 'zu', 'ze', 'zo', 
+    'da', 'ji/di', 'zu/du', 'de', 'do', 'ba', 'bi', 'bu', 'be', 'bo',
+    // Handakuten
+    'pa', 'pi', 'pu', 'pe', 'po',
+    // Yōon (Contracted)
+    'kya', 'kyu', 'kyo', 'sha', 'shu', 'sho', 'cha', 'chu', 'cho', 
+    'nya', 'nyu', 'nyo', 'hya', 'hyu', 'hyo', 'mya', 'myu', 'myo', 
+    'rya', 'ryu', 'ryo', 'gya', 'gyu', 'gyo', 'ja', 'ju', 'jo', 
+
+    'bya', 'byu', 'byo', 'pya', 'pyu', 'pyo'
+];
+const KATA_COMBINATIONS_CHARS = [
+    // Dakuten
+    'ガ', 'ギ', 'グ', 'ゲ', 'ゴ', 'ザ', 'ジ', 'ズ', 'ゼ', 'ゾ', 
+    'ダ', 'ヂ', 'ヅ', 'デ', 'ド', 'バ', 'ビ', 'ブ', 'ベ', 'ボ',
+    // Handakuten
+    'パ', 'ピ', 'プ', 'ペ', 'ポ',
+    // Yōon (Contracted)
+    'キャ', 'キュ', 'キョ', 'シャ', 'シュ', 'ショ', 'チャ', 'チュ', 'チョ', 
+    'ニャ', 'ニュ', 'ニョ', 'ヒャ', 'ヒュ', 'ヒョ', 'ミャ', 'ミュ', 'ミョ', 
+    'リャ', 'リュ', 'リョ', 'ギャ', 'ギュ', 'ギョ', 'ジャ', 'ジュ', 'ジョ', 
+    'ビャ', 'ビュ', 'ビョ', 
+'ピャ', 'ピュ', 'ピョ'
+];
+const KATA_COMBINATIONS_ROMANJI = [
+    // Dakuten
+    'ga', 'gi', 'gu', 'ge', 'go', 'za', 'ji', 'zu', 'ze', 'zo', 
+    'da', 'ji/di', 'zu/du', 'de', 'do', 'ba', 'bi', 'bu', 'be', 'bo',
+    // Handakuten
+    'pa', 'pi', 'pu', 'pe', 'po',
+    // Yōon (Contracted)
+    'kya', 'kyu', 'kyo', 'sha', 'shu', 'sho', 'cha', 'chu', 'cho', 
+    'nya', 'nyu', 'nyo', 'hya', 'hyu', 'hyo', 'mya', 'myu', 'myo', 
+    'rya', 'ryu', 'ryo', 'gya', 'gyu', 'gyo', 'ja', 'ju', 'jo', 
+    
+'bya', 'byu', 'byo', 'pya', 'pyu', 'pyo'
+];
+
+// ARRAYS COMPLETOS DE ALFABETO
+const HIRAGANA_CHARS_FULL = HIRAGANA_CHARS.concat(HIRA_COMBINATIONS_CHARS);
+const HIRAGANA_ROMANJI_FULL = HIRAGANA_ROMANJI.concat(HIRA_COMBINATIONS_ROMANJI);
+const KATAKANA_CHARS_FULL = KATAKANA_CHARS.concat(KATA_COMBINATIONS_CHARS);
+const KATAKANA_ROMANJI_FULL = KATAKANA_ROMANJI.concat(KATA_COMBINATIONS_ROMANJI);
+
+// KANJI DE EXEMPLO (PONTO 5)
+const KANJI_EXAMPLES = [
+    { char: '一', meaning: 'um', on: 'イチ', kun: 'ひと', source: 'example' },
+    { char: '二', meaning: 'dois', on: 'ニ', kun: 'ふた', source: 'example' },
+    { char: '人', meaning: 'pessoa', on: 'ジン, ニン', kun: 'ひと', source: 'example' },
+    { char: '日', meaning: 'dia, sol', on: 'ニチ, ジツ', kun: 'ひ, び', source: 'example' },
+    { char: '本', meaning: 'livro, base', on: 'ホン', kun: 'もと', source: 'example' },
+    
+{ char: '山', meaning: 'montanha', on: 'サン', kun: 'やま', source: 'example' },
+    { char: '川', meaning: 'rio', on: 'セン', kun: 'かわ', source: 'example' },
+    { char: '土', meaning: 'terra, solo', on: 'ド, ト', kun: 'つち', source: 'example' },
+];
+
+/* ===== STATE MANAGEMENT (Mantido) ===== */
+let state = loadState();
+let notifQueue = []; 
+let isNotifShowing = false; 
+let currentQuiz = { 
+    type: 'voc', 
+    questions: [], 
+    index: 0, 
+    question: null, 
+    totalCorrect: 0, 
+};
+function defaultState() { 
+    return { 
+        xp: 0, 
+        level: 1, 
+        words: [], 
+        kanji: [], 
+        alphaStats: {}, 
+        kanjiStats: {}, 
+        achievements: JSON.parse(JSON.stringify(ACHIEVEMENTS)), 
+        settings: { 
+           
+ sound: true, 
+        }, 
+    };
+} 
+
+function loadState() { 
+    const stored = localStorage.getItem(STORAGE_KEY);
+if (stored) { 
+        let loadedState = JSON.parse(stored);
+// Mesclagem de conquistas 
+        const defaultAchievementsMap = new Map(ACHIEVEMENTS.map(a => [a.id, a]));
+if (loadedState.achievements) {
+            loadedState.achievements = loadedState.achievements.map(ach => {
+                // Preencher com o default se a conquista for nova
+                return { ...defaultAchievementsMap.get(ach.id), ...ach };
+            });
+// Adicionar conquistas novas que não existiam no save
+            ACHIEVEMENTS.filter(a => !loadedState.achievements.find(la => la.id === a.id))
+                        .forEach(newAch => loadedState.achievements.push(JSON.parse(JSON.stringify(newAch))));
+} else {
+            loadedState.achievements = JSON.parse(JSON.stringify(ACHIEVEMENTS));
+}
+        
+        // Garante que as palavras e kanji tenham os novos campos de estatísticas
+        loadedState.words = loadedState.words.map(w => ({
+            ...w,
+            id: w.id || Date.now() + Math.random(), // Garante ID
+            seen: w.seen !== undefined ? w.seen : false, // Garante campo 'seen'
+     
+       stats: {
+                correct: w.stats?.correct || 0,
+                wrong: w.stats?.wrong || 0,
+                last: w.stats?.last || null,
+                srs_level: w.stats?.srs_level || 0,
+                
+next_review_date: w.stats?.next_review_date || null,
+            }
+        }));
+loadedState.kanji = loadedState.kanji.map(k => ({
+            ...k,
+            id: k.id || Date.now() + Math.random(), // Garante ID
+        }));
+// Garante o objeto settings
+        loadedState.settings = loadedState.settings || defaultState().settings;
+
+        return loadedState;
+} 
+    return defaultState();
+} 
+
+function saveState() { 
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+}
+
+/* ===== UTILITY FUNCTIONS (Inclui Pronúncia CORRIGIDA) ===== */
+
+function switchTab(tabId, element) {
+  document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+  document.getElementById(tabId).classList.add('active');
+  document.querySelectorAll('.sidebar-links a').forEach(link => link.classList.remove('active'));
+  if (element) {
+    element.classList.add('active');
+  }
+}
+
+function clearForm(formId) {
+  document.getElementById(formId).reset();
+}
+
+/**
+ * NOVO: Função para Pronúncia (Web Speech API)
+ * CORRIGIDA a seleção de idioma para Chrome Mobile.
+ * @param {string} text O texto (palavra) a ser pronunciado.
+ */
+function speak(text, lang = 'ja-JP') {
+    if (!('speechSynthesis' in window)) {
+        console.warn("Speech Synthesis API não suportada neste navegador.");
+return;
+    }
+
+    // Cancela qualquer fala em andamento
+    window.speechSynthesis.cancel(); 
+
+    const utterance = new SpeechSynthesisUtterance(text);
+utterance.lang = lang; 
+
+    // Tenta encontrar uma voz específica para o idioma (melhora a qualidade)
+    const voices = window.speechSynthesis.getVoices();
+const specificVoice = voices.find(voice => voice.lang === lang || voice.name.includes(lang.split('-')[0]));
+if (specificVoice) {
+        utterance.voice = specificVoice;
+} else {
+        console.log(`Voz para ${lang} não encontrada, usando a voz padrão.`);
+}
+    
+    // Configurações opcionais
+    utterance.rate = 1.0; 
+    utterance.pitch = 1.0;
+window.speechSynthesis.speak(utterance);
+}
+
+/* ===== SONS / NOTIFICAÇÕES / CONFETI (IMPORTADO DA v3.7.3) ===== */
+
+function playXPBlip() {
+    if (!state.settings.sound) return;
+    try {
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+const oscillator = audioCtx.createOscillator();
+        const gainNode = audioCtx.createGain();
+
+        oscillator.connect(gainNode);
+        gainNode.connect(audioCtx.destination);
+
+        oscillator.type = 'sine';
+        oscillator.frequency.setValueAtTime(440, audioCtx.currentTime);
+        gainNode.gain.setValueAtTime(0.5, audioCtx.currentTime);
+gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.1);
+
+        oscillator.start();
+        oscillator.stop(audioCtx.currentTime + 0.1);
+    } catch (e) { /* silent fail */ }
+}
+
+function playLevelUpTone() {
+    if (!state.settings.sound) return;
+try {
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        const oscillator1 = audioCtx.createOscillator();
+const oscillator2 = audioCtx.createOscillator();
+        const gainNode = audioCtx.createGain();
+
+        oscillator1.connect(gainNode);
+        oscillator2.connect(gainNode);
+        gainNode.connect(audioCtx.destination);
+
+        oscillator1.type = 'square';
+        oscillator2.type = 'triangle';
+        oscillator1.frequency.setValueAtTime(523, audioCtx.currentTime);
+oscillator2.frequency.setValueAtTime(659, audioCtx.currentTime + 0.1); 
+        
+        gainNode.gain.setValueAtTime(0.4, audioCtx.currentTime);
+        gainNode.gain.linearRampToValueAtTime(0.001, audioCtx.currentTime + 0.3);
+
+        oscillator1.start();
+        oscillator2.start();
+        oscillator1.stop(audioCtx.currentTime + 0.3);
+        oscillator2.stop(audioCtx.currentTime + 0.3);
+} catch (e) { /* silent fail */ }
+}
+
+function playAchievementTone() {
+    if (!state.settings.sound) return;
+try {
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        const oscillator = audioCtx.createOscillator();
+const gainNode = audioCtx.createGain();
+
+        oscillator.connect(gainNode);
+        gainNode.connect(audioCtx.destination);
+
+        oscillator.type = 'sawtooth'; 
+        oscillator.frequency.setValueAtTime(698, audioCtx.currentTime);
+// F5
+        gainNode.gain.setValueAtTime(0.5, audioCtx.currentTime);
+// Quick high/low ping sound
+        oscillator.frequency.linearRampToValueAtTime(830, audioCtx.currentTime + 0.1);
+// G#5
+        gainNode.gain.linearRampToValueAtTime(0.001, audioCtx.currentTime + 0.3);
+
+        oscillator.start();
+        oscillator.stop(audioCtx.currentTime + 0.3);
+} catch (e) { /* silent fail */ }
+}
+
+// NOVA FUNÇÃO DE SOM (PONTO 3), baseada no estilo da v3.7.3
+function playProficiencySound() {
+    if (!state.settings.sound) return;
+    try {
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        const oscillator = audioCtx.createOscillator();
+        const gainNode = audioCtx.createGain();
+        oscillator.connect(gainNode);
+        gainNode.connect(audioCtx.destination);
+        
+        oscillator.type = 'triangle'; 
+        oscillator.frequency.setValueAtTime(880, audioCtx.currentTime); // A5
+        gainNode.gain.setValueAtTime(0.4, audioCtx.currentTime);
+        
+        oscillator.frequency.exponentialRampToValueAtTime(1200, audioCtx.currentTime + 0.05); // Subida rápida
+        gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.15);
+
+        oscillator.start();
+        oscillator.stop(audioCtx.currentTime + 0.15);
+    } catch (e) { /* silent fail */ }
+}
+
+function launchConfetti(duration, count) {
+    const container = document.getElementById('confetti-container');
+container.innerHTML = ''; 
+    const colors = ['#ffd66b', '#ffb84d', '#5fb0ff', '#b58bff', '#18d39b'];
+for (let i = 0; i < count; i++) {
+        const confetti = document.createElement('div');
+confetti.classList.add('confetti');
+        confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+        
+        // Lógica da v3.7.3 (Espalhado pelo topo)
+        const xStart = Math.random() * 100 + 'vw';
+const yStart = -20 - Math.random() * 30 + 'px'; 
+        const xEnd = Math.random() * 100 + 'vw';
+        
+        confetti.style.setProperty('--x-start', xStart);
+confetti.style.setProperty('--y-start', yStart);
+        confetti.style.setProperty('--x-end', xEnd);
+        confetti.style.animationDelay = (Math.random() * 1.5) + 's';
+        confetti.style.left = xStart;
+
+        container.appendChild(confetti);
+}
+    
+    setTimeout(() => {
+        container.innerHTML = '';
+    }, duration);
+}
+
+function toggleSound() {
+    // Checkbox is CHECKED when sound is DISABLED
+    state.settings.sound = !document.getElementById('setting-sound').checked;
+saveState();
+}
+document.getElementById('setting-sound').addEventListener('change', toggleSound);
+
+/* ===== FIM DOS SONS IMPORTADOS ===== */
+
+/* ===== SRS / DATAS (Mantido) ===== */
+function updateWordSRS(wordId, isCorrect) {
+    const word = state.words.find(w => w.id === wordId);
+if (!word) return;
+
+    // Aumenta/diminui o nível SRS
+    let currentLevel = word.stats.srs_level;
+    let newLevel = currentLevel;
+if (isCorrect) {
+        newLevel = Math.min(6, currentLevel + 1);
+} else {
+        newLevel = Math.max(0, currentLevel - 1);
+}
+
+    word.stats.srs_level = newLevel;
+    
+    // Calcula a próxima data de revisão
+    const intervalData = SRS_INTERVALS.find(i => i.level === newLevel);
+if (intervalData) {
+        const nextReview = new Date();
+        nextReview.setDate(nextReview.getDate() + intervalData.days);
+// Garante que a data seja de fato no futuro
+        if(intervalData.days === 0 && new Date() > nextReview) {
+             nextReview.setHours(nextReview.getHours() + 1);
+// Se nível 0, reaparece em 1 hora
+        }
+        word.stats.next_review_date = nextReview.toISOString();
+} else {
+        word.stats.next_review_date = null;
+// Nível máximo
+    }
+}
+
+/**
+ * Retorna palavras para o quiz de vocabulário, incluindo todas as "Não vistas"
+ * e todas as palavras SRS com revisão pendente.
+*/
+function getWordsForReview() {
+    const now = new Date();
+// 1. Palavras SRS (nível > 0 e data de revisão no passado)
+    const srsReview = state.words.filter(w => 
+        w.stats.srs_level > 0 && 
+        w.stats.next_review_date && 
+        new Date(w.stats.next_review_date) <= now
+    );
+// 2. Palavras NOVAS (Não vistas, que precisam ser quizadas pela primeira vez)
+    const newWords = state.words.filter(w => !w.seen);
+// Combina novos e SRS, garantindo que novos sempre sejam incluídos.
+    let reviewList = srsReview.concat(newWords);
+// Remove duplicatas
+    const uniqueReviewList = Array.from(new Set(reviewList));
+// Mistura a lista para dar uma chance igual a todos os itens urgentes e novos
+    return shuffleArray(uniqueReviewList);
+}
+
+/* ===== XP / LEVEL UP / NOTIFICATIONS (Modificado para usar v3.7.3) ===== */
+
+function calculateLevel(xp) {
+  for (let i = LEVELS.length - 1; i >= 0; i--) {
+    if (xp >= LEVELS[i].xp) {
+      return LEVELS[i].level;
+    }
+  }
+  return 1;
+}
+
+// v3.7.9 showFlyout (Modificado)
+function showFlyout(type, title, message, icon) {
+    if (!state.settings.sound && type !== 'xp' && type !== 'correct' && type !== 'wrong') return;
+const container = document.getElementById('notif-container');
+    const flyout = document.createElement('div');
+    flyout.className = `xp-flyout ${type}`;
+flyout.innerHTML = `<div class="icon">${icon}</div>
+                        <div class="content">
+                            <div class="title">${title}</div>
+                            <div class="message">${message}</div>
+              
+          </div>`;
+    
+    container.prepend(flyout);
+// Força reflow para animação
+    flyout.offsetHeight; 
+    flyout.classList.add('active');
+if (type === 'level-up' || type === 'achievement') {
+        launchConfetti(5000, 100); // <- CORRIGIDO para usar launchConfetti
+}
+
+    // Oculta após 4 segundos
+    setTimeout(() => {
+        flyout.classList.remove('active');
+        // Remove após a transição
+        setTimeout(() => {
+            flyout.remove();
+            isNotifShowing = false;
+            processNotifQueue(); // Tenta processar o próximo item
+        }, 500); 
+  
+  }, 5000);
+
+    isNotifShowing = true;
+}
+
+function processNotifQueue() {
+    if (isNotifShowing || notifQueue.length === 0) {
+        return;
+}
+
+    const notif = notifQueue.shift();
+    if (notif.type === 'xp') {
+        playXPBlip();
+// Toca o som de XP Blip (v3.7.3)
+        showFlyout('xp', 'XP Ganho!', `+${notif.amount} XP`, '<i class="fas fa-star"></i>');
+} else if (notif.type === 'level-up') {
+        playLevelUpTone(); // <- CORRIGIDO para usar v3.7.3
+// Toca o som de Level Up
+        showFlyout('level-up', 'LEVEL UP!', `Você alcançou o Nível ${notif.level}!`, '<i class="fas fa-chart-line"></i>');
+} else if (notif.type === 'achievement') {
+        playAchievementTone(); // <- CORRIGIDO para usar v3.7.3
+// Toca o som de Conquista
+        showFlyout('achievement', 'CONQUISTA DESBLOQUEADA!', notif.name, '<i class="fas fa-trophy"></i>');
+} else if (notif.type === 'proficiency') { // Novo tipo (PONTO 3)
+        playProficiencySound(); // <- CORRIGIDO para usar novo som v3.7.3
+const isAlpha = notif.type_name === 'Hiragana' || notif.type_name === 'Katakana';
+        const typeName = notif.type_name || 'Palavra';
+const title = `Proficiência ${notif.tier} 🎉`;
+        const message = `${typeName} "${notif.item}" alcançou o nível ${notif.tier}.`;
+const icon = notif.tier === 'Ouro' ? '<i class="fas fa-medal" style="color:var(--gold1);"></i>' : '<i class="fas fa-certificate" style="color:#c0c0c0;"></i>';
+        showFlyout('proficiency', title, message, icon);
+}
+}
+
+function addXP(amount) {
+    const oldLevel = state.level;
+    state.xp += amount;
+// Calcula novo nível
+    let newLevel = state.level;
+for (let i = LEVELS.length - 1; i >= 0; i--) {
+        if (state.xp >= LEVELS[i].xp) {
+            newLevel = LEVELS[i].level;
+break;
+        }
+    }
+    
+    // Se o nível mudou, notifica
+    if (newLevel > oldLevel) {
+        state.level = newLevel;
+// Adiciona o Level Up na fila
+        notifQueue.push({ type: 'level-up', level: state.level });
+checkAchievements(state.level, 'level');
+    } else {
+        // Adiciona o ganho de XP na fila
+        // O som do XP Blip é chamado DENTRO de processNotifQueue agora
+        notifQueue.push({ type: 'xp', amount: amount });
+}
+    saveState();
+    updateUI();
+    processNotifQueue(); // Inicia (ou tenta iniciar) o processamento da fila
+}
+
+/* ===== ACHIEVEMENTS LOGIC (Mantido) ===== */
+function unlockAchievement(id) { 
+    const ach = state.achievements.find(a => a.id === id);
+if (ach && !ach.unlocked) { 
+        ach.unlocked = true; 
+        saveState();
+// Adiciona a conquista na fila
+        notifQueue.push({ type: 'achievement', name: ach.name });
+        processNotifQueue();
+// Inicia (ou tenta iniciar) o processamento da fila 
+        updateUI(); 
+        return true;
+} 
+    return false;
+} 
+
+function checkAchievements(newValue, type) {
+    let achievementUnlocked = false;
+
+    // Conquistas baseadas em contagem simples (word, level, kanji, quiz)
+    state.achievements.filter(ach => 
+        (ach.type === 'word' || ach.type === 'level' || ach.type === 'kanji' || ach.type === 'quiz') && !ach.unlocked
+    ).forEach(ach => {
+        if (ach.type === type) {
+            if (newValue > ach.current) ach.current = newValue;
+            if (ach.current >= ach.value) {
+                unlockAchievement(ach.id);
+                achievementUnlocked = true;
+            }
+        }
+    });
+
+    // Conquistas baseadas em contagem de categorias únicas (category)
+    if (type === 'category') {
+        const uniqueCategories = [...new Set(state.words.map(w => w.category ? w.category.trim() : '').filter(c => c))];
+        state.achievements.filter(a => a.type === 'category' && !a.unlocked).forEach(ach => {
+            ach.current = uniqueCategories.length;
+            if (uniqueCategories.length >= ach.value) {
+                unlockAchievement(ach.id);
+                achievementUnlocked = true;
+            }
+        });
+    }
+
+    // Caso especial de contagem de palavras por Categoria E PROFICIÊNCIA DE PALAVRAS/KANJI
+    if (type === 'word' || type === 'category' || type === 'word_correct' || type === 'kanji_correct') {
+        
+        // 1. Contagem de palavras por Categoria (cat_word_count)
+        const wordCountsByCategory = state.words.reduce((acc, w) => {
+            const cat = w.category ? w.category.trim() : '';
+            if (cat) { acc[cat] = (acc[cat] || 0) + 1; }
+            return acc;
+        }, {});
+        state.achievements.filter(a => a.type === 'cat_word_count' && !a.unlocked).forEach(ach => {
+            const categoryToTrack = ach.category_key ? ach.category_key.trim() : '';
+            if (!categoryToTrack) return;
+            const currentCount = wordCountsByCategory[categoryToTrack] || 0;
+            ach.current = currentCount;
+            if (currentCount >= ach.value) {
+                unlockAchievement(ach.id);
+                achievementUnlocked = true;
+            }
+        });
+
+        // 2. NOVO: Proficiência Ouro de Palavras (word_gold)
+        if (type === 'word_correct') {
+            const wordGoldCount = state.words.filter(w => (w.stats.correct || 0) >= WORD_GOLD_THRESHOLD).length;
+            state.achievements.filter(a => a.type === 'word_gold' && !a.unlocked).forEach(ach => {
+                ach.current = wordGoldCount;
+                if (wordGoldCount >= ach.value) {
+                    unlockAchievement(ach.id);
+                    achievementUnlocked = true;
+                }
+            });
+        }
+
+        // 3. NOVO: Proficiência Ouro de Kanji (kanji_gold)
+        if (type === 'kanji_correct') {
+            const kanjiGoldCount = state.kanji.filter(k => (state.kanjiStats[k.char]?.correct || 0) >= ALPHA_GOLD_THRESHOLD).length;
+            state.achievements.filter(a => a.type === 'kanji_gold' && !a.unlocked).forEach(ach => {
+                ach.current = kanjiGoldCount;
+                if (kanjiGoldCount >= ach.value) {
+                    unlockAchievement(ach.id);
+                    achievementUnlocked = true;
+                }
+            });
+        }
+    }
+
+
+    // Casos especiais de Alfabeto (hira_correct, kata_correct)
+    if (type === 'hira_correct' || type === 'kata_correct') {
+        const stats = state.alphaStats;
+        const charsFull = type === 'hira_correct' ? HIRAGANA_CHARS_FULL : KATAKANA_CHARS_FULL;
+        const prefix = type === 'hira_correct' ? 'hira' : 'kata';
+        
+        const goldCount = charsFull.filter(char => (stats[char]?.correct || 0) >= ALPHA_GOLD_THRESHOLD).length;
+
+        // 1. Conquistas de Contagem Ouro (hira_gold / kata_gold)
+        state.achievements.filter(a => a.type === prefix + '_gold' && !a.unlocked).forEach(ach => {
+            ach.current = goldCount;
+            if (goldCount >= ach.value) {
+                unlockAchievement(ach.id);
+                achievementUnlocked = true;
+            }
+        });
+
+        // 2. NOVO: Conquistas de Maestria (hira_mastery / kata_mastery)
+        state.achievements.filter(a => a.type === prefix + '_mastery' && !a.unlocked).forEach(ach => {
+            const totalChars = charsFull.length; 
+            ach.current = goldCount; // Progresso é a contagem de ouro
+            
+            // Checa se todos os caracteres alcançaram a proficiência Ouro
+            if (goldCount >= totalChars) {
+                unlockAchievement(ach.id);
+                achievementUnlocked = true;
+            }
+        });
+    }
+
+    // Checagem de Conquistas JLPT
+    if (type === 'jlpt_add') { // Chamada em addWord se houver nível JLPT
+        const jlptCounts = state.words.reduce((acc, w) => {
+            if (w.jlpt && w.jlpt !== 'None') {
+                acc[w.jlpt] = (acc[w.jlpt] || 0) + 1;
+            }
+            return acc;
+        }, {});
+
+        state.achievements.filter(a => a.type === 'jlpt' && !a.unlocked).forEach(ach => {
+            const level = ach.id.split('_')[1].toUpperCase(); // Ex: N5
+            const currentCount = jlptCounts[level] || 0;
+            ach.current = currentCount;
+            if (currentCount >= ach.value) {
+                unlockAchievement(ach.id);
+                achievementUnlocked = true;
+            }
+        });
+    }
+
+
+    if (achievementUnlocked) {
+        renderAchievements();
+        saveState();
+    }
+}
+
+function checkAllAchievements() {
+    // 1. Check Word Count
+    checkAchievements(state.words.length, 'word');
+// 2. Check Kanji Count
+    checkAchievements(state.kanji.length, 'kanji');
+// 3. Check Level (se for chamado após o load)
+    checkAchievements(state.level, 'level');
+// 4. Check Unique Categories
+    const uniqueCategories = [...new Set(state.words.map(w => w.category ? w.category.trim() : '').filter(c => c))];
+checkAchievements(uniqueCategories, 'category');
+
+    // 5. Check Hiragana/Katakana Gold
+    checkAchievements(null, 'hira_correct');
+    checkAchievements(null, 'kata_correct');
+// 6. Check JLPT Achievements (Recalcula total)
+    const jlptWordCounts = state.words.reduce((acc, w) => {
+        const jlpt = w.jlpt || 'None';
+        acc[jlpt] = (acc[jlpt] || 0) + 1;
+        return acc;
+    }, {});
+state.achievements.filter(a => a.type === 'jlpt').forEach(ach => {
+        const jlptLevel = ach.id.split('_')[1].toUpperCase();
+        const currentCount = jlptWordCounts[jlptLevel] || 0;
+        ach.current = currentCount;
+        if (ach.current >= ach.value && !ach.unlocked) {
+            unlockAchievement(ach.id);
+        }
+    });
+// 7. Check Category Word Count Achievements (Recalcula total)
+    const wordCountsByCategory = state.words.reduce((acc, w) => {
+        const cat = w.category ? w.category.trim() : '';
+        if (cat) {
+            acc[cat] = (acc[cat] || 0) + 1;
+        }
+        return acc;
+    }, {});
+state.achievements.filter(a => a.type === 'cat_word_count').forEach(ach => {
+        const categoryToTrack = ach.category_key ? ach.category_key.trim() : '';
+        if (!categoryToTrack) return;
+        const currentCount = wordCountsByCategory[categoryToTrack] || 0;
+        ach.current = currentCount;
+        if (currentCount >= ach.value && !ach.unlocked) {
+            unlockAchievement(ach.id);
+        }
+    });
+}
+
+/* ===== UI / RENDERING (Modificado: makeWordItemHTML - PONTO 2) ===== */
+function makeWordItemHTML(word) { 
+    // === USANDO AS CONSTANTES GLOBAIS === 
+    const jlptTag = word.jlpt !== 'None' ?
+`<span class="jlpt-tag">${word.jlpt}</span>` : '';
+    const categoryTag = word.category ? `<span class="cat-tag">${word.category}</span>` : ''; 
+    const srsLevel = word.stats.srs_level || 0;
+const srsTag = `<span class="srs-level-tag srs-${srsLevel}" title="Nível SRS: ${srsLevel} (${SRS_INTERVALS.find(i => i.level === srsLevel)?.days || 60} dias)">SRS L${srsLevel}</span>`;
+let proficiencyClass = '';
+    if (word.stats.correct >= WORD_GOLD_THRESHOLD) {
+        proficiencyClass = 'char-gold';
+} else if (word.stats.correct >= WORD_SILVER_THRESHOLD) {
+        proficiencyClass = 'char-silver';
+}
+
+    const seenClass = word.seen ? 'seen' : '';
+// Formata a data da próxima revisão
+    let reviewDateText = 'Pronto para Revisão';
+if (srsLevel > 0 && word.stats.next_review_date) {
+        const nextReview = new Date(word.stats.next_review_date);
+const today = new Date();
+        today.setHours(0,0,0,0);
+        const reviewDay = new Date(nextReview);
+        reviewDay.setHours(0,0,0,0);
+if (reviewDay.getTime() <= today.getTime()) {
+            reviewDateText = `Revisar! (L${srsLevel})`;
+} else {
+            const diffTime = Math.abs(reviewDay.getTime() - today.getTime());
+const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+reviewDateText = `Revisão em ${diffDays} dia${diffDays !== 1 ? 's' : ''}`;
+}
+    } else if (srsLevel === 0 && !word.seen) {
+        reviewDateText = 'Novo';
+} else if (srsLevel === 6) {
+        reviewDateText = 'Dominado! (L6)';
+} else {
+        reviewDateText = 'Visto';
+}
+
+    const correctBadge = word.stats.correct > 0 ? `<span style="color:var(--success); font-size: 0.9em; margin-left: 5px;" title="Acertos">${word.stats.correct}</span>` : '';
+const wrongBadge = word.stats.wrong > 0 ? `<span style="color:var(--danger); font-size: 0.9em; margin-left: 5px;" title="Erros">${word.stats.wrong}</span>` : '';
+return `
+        <li class="word-item ${proficiencyClass} ${seenClass}" data-id="${word.id}">
+            <div class="word-details">
+                <div class="word-text">${word.text}</div>
+                <div class="word-reading">${word.reading}</div>
+                <div class="word-translation">${word.translation}</div>
+                <div class="word-meta" style="margin-top: 5px;">
+    
+                ${srsTag}
+                    ${jlptTag}
+                    ${categoryTag}
+                    <span style="color:var(--muted); font-size:0.8em; margin-left:10px;">${reviewDateText}</span>
+                    ${correctBadge}
+ 
+                   ${wrongBadge}
+                </div>
+            </div>
+            <div class="word-actions">
+                <button onclick="openEditModal('${word.id}')"><i class="fas fa-edit" title="Editar"></i></button>
+                <button onclick="speak('${word.text}', 'ja-JP')" title="Pronunciar 
+Palavra">
+                    <i class="fas fa-volume-up"></i>
+                </button>
+                <button onclick="toggleWordSeen('${word.id}')">
+                    <i class="fas ${word.seen ?
+'fa-eye-slash' : 'fa-eye'}" title="${word.seen ? 'Desmarcar como Vista' : 'Marcar como Vista'}"></i>
+                </button>
+                <button onclick="deleteWord('${word.id}')" style="color:var(--danger);"><i class="fas fa-trash-alt" title="Excluir"></i></button>
+            </div>
+        </li>
+    `;
+}
+
+function renderList() { 
+    const listEl = document.getElementById('word-list');
+    const searchInput = document.getElementById('search-input').value.toLowerCase().trim();
+    const jlptFilter = document.getElementById('filter-jlpt').value;
+    
+const categoryFilter = document.getElementById('filter-category').value;
+    let filteredWords = state.words;
+
+    // 1. Filtering by Search
+    if (searchInput) {
+        filteredWords = filteredWords.filter(word => 
+            word.text.toLowerCase().includes(searchInput) ||
+            word.reading.toLowerCase().includes(searchInput) ||
+            word.translation.toLowerCase().includes(searchInput)
+        );
+    }
+
+    // 2. Filtering by JLPT
+    if (jlptFilter) 
+{
+        filteredWords = filteredWords.filter(word => word.jlpt === jlptFilter);
+}
+    
+    // 3. Filtering by Category
+    if (categoryFilter) {
+        filteredWords = filteredWords.filter(word => word.category && word.category.trim() === categoryFilter);
+}
+    
+    listEl.innerHTML = filteredWords.map(makeWordItemHTML).join(''); 
+    document.getElementById('word-count').textContent = filteredWords.length;
+// Atualiza o contador de revisão
+    const reviewCount = getWordsForReview().length;
+    document.getElementById('srs-review-count').textContent = reviewCount;
+document.getElementById('srs-review-count').style.color = reviewCount > 0 ? 'var(--gold1)' : 'var(--muted)';
+
+    // Atualiza o filtro de categorias
+    const uniqueCategories = [...new Set(state.words.map(w => w.category ? w.category.trim() : '').filter(c => c))].sort();
+const categoryFilterEl = document.getElementById('filter-category');
+    const currentCategory = categoryFilterEl.value;
+    categoryFilterEl.innerHTML = '<option value="">Todas Categorias</option>' + 
+                                  uniqueCategories.map(cat => 
+                                      `<option value="${cat}" ${cat === currentCategory ? 'selected' : ''}>${cat}</option>`
+    
+                              ).join('');
+} 
+
+function makeAlphaCharHTML(char, romaji, type) { 
+    const charStats = state.alphaStats[char] ||
+    { correct: 0 };
+let proficiencyClass = ''; 
+    if (charStats.correct >= ALPHA_GOLD_THRESHOLD) { 
+        proficiencyClass = 'char-gold';
+} else if (charStats.correct >= ALPHA_SILVER_THRESHOLD) { 
+        proficiencyClass = 'char-silver';
+} 
+    return ` 
+        <div class="char-container ${proficiencyClass}" data-char="${char}" onclick="speak('${char}', 'ja-JP')"> 
+            <div class="char-main">${char}</div> 
+            <div class="char-romaji">${romaji}</div> 
+        </div> `;
+} 
+
+/**
+ * Gera o HTML para o cartão Kanji.
+ * Aplica o estilo de caractere solicitado.
+(PONTO 5)
+ */
+function makeKanjiCardHTML(kanji) { 
+    const char = kanji.char;
+    const charStats = state.kanjiStats[char] ||
+{ correct: 0 }; 
+    let proficiencyClass = '';
+    if (charStats.correct >= ALPHA_GOLD_THRESHOLD) { 
+        proficiencyClass = 'char-gold';
+} else if (charStats.correct >= ALPHA_SILVER_THRESHOLD) { 
+        proficiencyClass = 'char-silver';
+} 
+    const isUserKanji = kanji.id !== undefined && kanji.source !== 'example'; 
+    let actionsHTML = '';
+if (isUserKanji) { 
+        actionsHTML = ` 
+            <div style="margin-top: 10px; border-top: 1px solid var(--panel); padding-top: 8px;"> 
+                <button onclick="openKanjiEditModal('${kanji.id}')" title="Editar"><i class="fas fa-edit"></i></button>
+                <button onclick="deleteKanji('${kanji.id}')" style="color:var(--danger);"
+title="Excluir"><i class="fas fa-trash-alt"></i></button>
+            </div>`;
+}
+
+    return `
+        <div class="kanji-card ${proficiencyClass}" data-kanji="${char}">
+            <div class="kanji-char" onclick="speak('${char}', 'ja-JP')" style="cursor: pointer; font-size: 2.5em; font-weight: 700; color: var(--accent2);">
+                ${char} 
+                <i class="fas fa-volume-up" style="font-size: 0.4em; margin-left: 5px; color: var(--accent1);"></i>
+            </div>
+        
+    <div class="kanji-meaning" title="Significado">${kanji.meaning}</div>
+            ${kanji.on ?
+`<div class="char-romaji" title="Leitura On'yomi">On: ${kanji.on}</div>` : ''}
+            ${kanji.kun ?
+`<div class="char-romaji" title="Leitura Kun'yomi">Kun: ${kanji.kun}</div>` : ''}
+            ${actionsHTML}
+        </div>
+    `;
+}
+
+function renderAlphabets() {
+    const searchInput = document.getElementById('kanji-search-input')?.value.toLowerCase().trim() || '';
+// Render Hiragana (Usando o array FULL com combinações)
+    const hiraGridEl = document.getElementById('hiragana-grid');
+if (hiraGridEl) {
+        hiraGridEl.innerHTML = HIRAGANA_CHARS_FULL.map((char, index) => 
+            makeAlphaCharHTML(char, HIRAGANA_ROMANJI_FULL[index], 'hiragana')
+        ).join('');
+}
+
+    // Render Katakana (Usando o array FULL com combinações)
+    const kataGridEl = document.getElementById('katakana-grid');
+if (kataGridEl) {
+        kataGridEl.innerHTML = KATAKANA_CHARS_FULL.map((char, index) => 
+            makeAlphaCharHTML(char, KATAKANA_ROMANJI_FULL[index], 'katakana')
+        ).join('');
+}
+
+    // Render Kanji (Incluindo exemplos e Kanijs do usuário)
+    const kanjiGridEl = document.getElementById('kanji-grid');
+if (kanjiGridEl) {
+        // Combina Kanji de exemplo e Kanji do usuário (usuário tem prioridade)
+        let combinedKanji = [...KANJI_EXAMPLES, ...state.kanji];
+// Remove duplicatas (se o usuário adicionar um kanji de exemplo, a versão dele prevalece)
+        const uniqueKanjiMap = combinedKanji.reduce((map, kanji) => {
+            if (!map.has(kanji.char) || kanji.id !== undefined) {
+                 map.set(kanji.char, kanji);
+            }
+            return map;
+        }, new Map());
+let filteredKanji = Array.from(uniqueKanjiMap.values());
+
+        if (searchInput) {
+            filteredKanji = filteredKanji.filter(k => 
+                k.char.includes(searchInput) ||
+                k.meaning.toLowerCase().includes(searchInput) ||
+                (k.on && k.on.toLowerCase().includes(searchInput)) ||
+                (k.kun && k.kun.toLowerCase().includes(searchInput))
+       
+     );
+        }
+        document.getElementById('kanji-count').textContent = state.kanji.length;
+        kanjiGridEl.innerHTML = filteredKanji.map(makeKanjiCardHTML).join('');
+}
+}
+
+/**
+ * Corrige o texto de progresso para conquistas que não são padrão.
+*/
+function renderAchievements() {
+    // Garante que todas as conquistas tenham o campo `current`
+    checkAllAchievements();
+const gridEl = document.getElementById('achievement-grid');
+    if (!gridEl) return;
+
+    gridEl.innerHTML = state.achievements.map(ach => {
+        let progressText;
+        if (ach.unlocked) {
+            progressText = 'Conquistado!';
+        } else if (ach.type === 'category') {
+             progressText = `${ach.current} / ${ach.value} Categorias Únicas`; 
+        } else if (ach.type === 'hira_gold' || ach.type === 'kata_gold') {
+    
+         // Usa a contagem total para as conquistas de 1/10
+             progressText = `${ach.current} / ${ach.value} Caracteres Ouro`;
+        } else if (ach.type === 'kanji_gold') {
+             progressText = `${ach.current} / ${ach.value} Kanji Ouro`;
+        } else if (ach.type === 'cat_word_count') { // Novo caso para categorias específicas
+          
+   progressText = `${ach.current} / ${ach.value} Palavras em ${ach.category_key}`;
+        } else if (ach.type === 'jlpt') { // Novo caso para JLPT
+             progressText = `${ach.current} / ${ach.value} Palavras JLPT`;
+        
+        /* === INÍCIO DA CORREÇÃO v3.8.1 (Atualizada) === */
+        } else if (ach.type === 'word_gold') { 
+             progressText = `${ach.current} / ${ach.value} Palavras Ouro`;
+        } else if (ach.type === 'word') {
+             progressText = `${ach.current} / ${ach.value} Palavras`;
+        } else if (ach.type === 'level') {
+             progressText = `${ach.current} / ${ach.value} Níveis`;
+        } else if (ach.type === 'kanji') {
+             progressText = `${ach.current} / ${ach.value} Kanjis`;
+        } else if (ach.type === 'quiz') {
+             progressText = `${ach.current} / ${ach.value} Quizzes`;
+        } else if (ach.type === 'hira_mastery') { // Correção adicionada
+             progressText = `${ach.current} / ${ach.value} Caracteres (Hiragana)`;
+        } else if (ach.type === 'kata_mastery') { // Correção adicionada
+             progressText = `${ach.current} / ${ach.value} Caracteres (Katakana)`;
+        /* === FIM DA CORREÇÃO v3.8.1 === */
+        
+        } else {
+            // Fallback (Mantido para segurança)
+            progressText = `${ach.current} / ${ach.value} ${ach.type.charAt(0).toUpperCase() + ach.type.slice(1)}s`;
+}
+
+        return `<div class="achievement-card ${ach.unlocked ? 
+            'unlocked' : ''}" title="${ach.name}: ${ach.desc}"> 
+                <i class="${ach.icon}"></i> 
+                <h4>${ach.name}</h4> 
+                <p class="ach-desc">${ach.desc}</p> 
+                <p 
+class="ach-progress">${progressText}</p> 
+            </div> `; 
+    }).join('');
+const unlockedCount = state.achievements.filter(a => a.unlocked).length; 
+    document.getElementById('unlocked-achievements-count').textContent = unlockedCount; 
+    document.getElementById('total-achievements-count').textContent = state.achievements.length;
+} 
+
+function updateStats() { 
+    const uniqueCategories = [...new Set(state.words.map(w => w.category ? w.category.trim() : '').filter(c => c))];
+const unlockedCount = state.achievements.filter(a => a.unlocked).length; 
+    document.getElementById('stat-words').textContent = state.words.length; 
+    document.getElementById('stat-kanji').textContent = state.kanji.length; 
+    document.getElementById('stat-achievements').textContent = unlockedCount; 
+    document.getElementById('stat-categories').textContent = uniqueCategories.length;
+document.getElementById('stat-xp').textContent = state.xp;
+} 
+
+function updateUI() { 
+    const currentLevelData = LEVELS.find(l => l.level === state.level);
+const nextLevelData = LEVELS.find(l => l.level === state.level + 1); 
+    document.getElementById('level-display').textContent = `Level ${state.level}`; 
+    let xpRequired = nextLevelData ?
+nextLevelData.xp - currentLevelData.xp : 0; 
+    let xpGained = nextLevelData ? state.xp - currentLevelData.xp : state.xp - currentLevelData.xp;
+let progress = nextLevelData ? (xpGained / xpRequired) * 100 : 100; 
+    document.getElementById('xp-progress').style.width = `${progress}%`; 
+    document.getElementById('xp-label').textContent = nextLevelData ?
+`${xpGained} XP / ${xpRequired} XP` : 'MAX LEVEL!'; 
+    
+    // Render Lists 
+    renderList(); 
+    renderAlphabets();
+// Update Stats 
+    updateStats();
+    
+    // Render Achievements
+    renderAchievements();
+// Atualiza a opção de som
+    const soundSettingEl = document.getElementById('setting-sound');
+if (soundSettingEl) {
+        soundSettingEl.checked = !state.settings.sound;
+// Invertido, checked = 'desativar sons'
+    }
+} 
+
+function switchTab(tabId, element) {
+    document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+document.getElementById(tabId).classList.add('active');
+    document.querySelectorAll('.sidebar-links a').forEach(el => el.classList.remove('active'));
+    element.classList.add('active');
+    // Força a renderização ao trocar de aba (necessário para estatísticas/alfabetos)
+    if (tabId === 'alphabets') renderAlphabets();
+if (tabId === 'achievements') renderAchievements();
+    if (tabId === 'dict') renderList();
+}
+
+function clearForm(formId) {
+    document.getElementById(formId).reset();
+}
+
+/* ===== PALAVRAS / CRUD (Mantido) ===== */
+function getWordIndex(id) {
+    // Garante que o ID é tratado como número (embora usemos string-id)
+    return state.words.findIndex(w => w.id == id);
+}
+
+function addWord(e) {
+    e.preventDefault();
+    const form = e.target;
+    
+    // 1. Obter os valores que serão verificados
+    const textValue = form['word-text'].value.trim();
+    const readingValue = form['word-reading'].value.trim();
+
+    /* === V3.8.8: REGRA DE PREVENÇÃO DE DUPLICIDADE === */
+    const isDuplicate = state.words.some(
+        // Verifica se o texto OU a leitura já existem no dicionário
+        w => (w.text === textValue || w.reading === readingValue)
+    );
+
+    if (isDuplicate) {
+        // Exibir alerta e interromper
+        alert(`A palavra "${textValue}" ou a leitura "${readingValue}" já existe neste dicionário.`);
+        
+        // Opcional: Limpar os campos do formulário após o alerta
+        form.reset(); 
+        
+        return; 
+    }
+const newWord = {
+        id: Date.now() + Math.random(), // ID único
+        text: textValue, // Usa o valor já limpo
+        reading: readingValue, // Usa o valor já limpo
+        translation: form['word-translation'].value.trim(),
+        jlpt: form['word-jlpt'].value,
+        category: form['word-category'].value.trim(),
+        tags: form['word-tags'].value.split(',').map(tag => tag.trim()).filter(tag => tag),
+        notes: form['word-notes'].value.trim(),
+        seen: false, 
+        stats: { 
+            correct: 0,
+            wrong: 0,
+            last: null,
+            srs_level: 0,
+            next_review_date: null,
+        }
+    };
+state.words.push(newWord);
+    clearForm('add-word-form');
+    addXP(XP_BY_JLPT[newWord.jlpt]); // Adiciona XP ao adicionar a palavra
+    checkAllAchievements();
+// Verifica se alguma conquista foi desbloqueada
+    saveState();
+    updateUI();
+}
+
+function deleteWord(id) { 
+    if (!confirm('Tem certeza que deseja excluir esta palavra?')) return; 
+    const index = getWordIndex(id);
+if (index !== -1) { 
+        state.words.splice(index, 1); 
+        saveState(); 
+        checkAllAchievements(); 
+        updateUI();
+} 
+} 
+
+function toggleWordSeen(id) { 
+    const index = getWordIndex(id);
+if (index !== -1) { 
+        state.words[index].seen = !state.words[index].seen; 
+        saveState(); 
+        renderList();
+} 
+} 
+
+/**
+ * IMPLEMENTAÇÃO DA CORREÇÃO: Função para marcar/desmarcar todas as palavras como vistas.
+* @param {boolean} seen - true para marcar como vista, false para desmarcar.
+*/
+function toggleAllWordsSeen(seen) {
+    if (!confirm(`Tem certeza que deseja ${seen ? 'MARCAR' : 'DESMARCAR'} todas as ${state.words.length} palavras como vistas/não-revisadas?`)) return;
+state.words.forEach(word => {
+        word.seen = seen;
+        // Se for desmarcar, zera o SRS para re-aprender
+        if (!seen) {
+            word.stats.srs_level = 0;
+            word.stats.next_review_date = null;
+        }
+    });
+saveState();
+    renderList();
+}
+
+
+// Funções de Edição de Palavras 
+function openEditModal(id) { 
+    const word = state.words.find(w => w.id == id);
+if (!word) return; 
+    document.getElementById('edit-word-id').value = id; 
+    document.getElementById('edit-word-text').value = word.text; 
+    document.getElementById('edit-word-reading').value = word.reading; 
+    document.getElementById('edit-word-translation').value = word.translation; 
+    document.getElementById('edit-word-jlpt').value = word.jlpt || 'None';
+document.getElementById('edit-word-category').value = word.category || ''; 
+    document.getElementById('edit-word-tags').value = word.tags ? word.tags.join(', ') : ''; 
+    document.getElementById('edit-word-notes').value = word.notes || ''; 
+    document.getElementById('edit-word-modal').classList.add('active');
+} 
+
+function closeEditModal() { 
+    document.getElementById('edit-word-modal').classList.remove('active'); 
+} 
+
+function saveEditedWord(e) { 
+    e.preventDefault();
+const form = e.target; 
+    const id = form['edit-word-id'].value;
+    const index = getWordIndex(id);
+if (index !== -1) {
+        // Guarda o antigo JLPT para re-check de XP
+        const oldJlpt = state.words[index].jlpt;
+state.words[index].text = form['edit-word-text'].value.trim();
+        state.words[index].reading = form['edit-word-reading'].value.trim();
+        state.words[index].translation = form['edit-word-translation'].value.trim();
+        state.words[index].jlpt = form['edit-word-jlpt'].value;
+        state.words[index].category = form['edit-word-category'].value.trim();
+state.words[index].tags = form['edit-word-tags'].value.split(',').map(tag => tag.trim()).filter(tag => tag);
+        state.words[index].notes = form['edit-word-notes'].value.trim();
+// Se o JLPT mudou para um maior, adiciona XP, senão, apenas salva.
+        const newJlpt = state.words[index].jlpt;
+if (XP_BY_JLPT[newJlpt] > XP_BY_JLPT[oldJlpt]) {
+             addXP(XP_BY_JLPT[newJlpt] - XP_BY_JLPT[oldJlpt]);
+}
+        
+        saveState();
+        checkAllAchievements();
+        updateUI();
+        closeEditModal();
+}
+}
+document.getElementById('add-word-form').onsubmit = addWord;
+document.getElementById('edit-word-form').onsubmit = saveEditedWord;
+
+/* ===== KANJI / CRUD (Mantido) ===== */
+function getKanjiIndex(id) {
+    return state.kanji.findIndex(k => k.id == id);
+}
+
+function addKanji(e) {
+    e.preventDefault();
+    const form = e.target;
+    const char = form['kanji-char'].value.trim();
+if (state.kanji.some(k => k.char === char)) {
+        alert(`O Kanji "${char}" já existe na sua lista.`);
+return;
+    }
+
+    const newKanji = {
+        id: Date.now() + Math.random(),
+        char: char,
+        meaning: form['kanji-meaning'].value.trim(),
+        on: form['kanji-reading-on'].value.trim(),
+        kun: form['kanji-reading-kun'].value.trim(),
+    };
+state.kanji.push(newKanji);
+    clearForm('add-kanji-form');
+    checkAllAchievements();
+    saveState();
+    updateUI();
+    addXP(15); // XP bônus por adicionar Kanji
+}
+
+function deleteKanji(id) {
+    if (!confirm('Tem certeza que deseja excluir este Kanji?')) return;
+const index = getKanjiIndex(id);
+    if (index !== -1) {
+        // Também remove as estatísticas associadas ao caractere
+        const char = state.kanji[index].char;
+delete state.kanjiStats[char];
+        state.kanji.splice(index, 1); 
+        saveState();
+        checkAllAchievements();
+        updateUI();
+    }
+}
+
+function openKanjiEditModal(id) {
+    const kanji = state.kanji.find(k => k.id == id);
+if (!kanji) return;
+    document.getElementById('edit-kanji-id').value = id;
+    document.getElementById('edit-kanji-char').value = kanji.char;
+    document.getElementById('edit-kanji-meaning').value = kanji.meaning;
+    document.getElementById('edit-kanji-reading-on').value = kanji.on || '';
+document.getElementById('edit-kanji-reading-kun').value = kanji.kun || '';
+    document.getElementById('edit-kanji-modal').classList.add('active');
+}
+
+function closeKanjiEditModal() {
+    document.getElementById('edit-kanji-modal').classList.remove('active');
+}
+
+function saveEditedKanji(e) {
+    e.preventDefault();
+const form = e.target;
+    const id = form['edit-kanji-id'].value;
+    const index = state.kanji.findIndex(k => k.id == id);
+if (index === -1) return;
+
+    const currentKanji = state.kanji[index];
+    const oldChar = currentKanji.char;
+    const newChar = form['edit-kanji-char'].value.trim();
+// Se o caractere mudar, transfere as estatísticas de quiz
+    if (oldChar !== newChar) {
+        if (state.kanjiStats[oldChar]) {
+            state.kanjiStats[newChar] = state.kanjiStats[oldChar];
+delete state.kanjiStats[oldChar];
+        }
+    }
+
+    currentKanji.char = newChar;
+    currentKanji.meaning = form['edit-kanji-meaning'].value.trim();
+    currentKanji.on = form['edit-kanji-reading-on'].value.trim();
+currentKanji.kun = form['edit-kanji-reading-kun'].value.trim();
+
+    saveState();
+    updateUI();
+    closeKanjiEditModal();
+}
+document.getElementById('add-kanji-form').onsubmit = addKanji;
+document.getElementById('edit-kanji-form').onsubmit = saveEditedKanji;
+/* ===== QUIZ LOGIC (Modificado: Proficiência) ===== */
+function shuffleArray(array) {
+    for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+[array[i], array[j]] = [array[j], array[i]];
+    }
+    return array;
+}
+
+function getQuizQuestion(type) { 
+    if (type === 'voc') { 
+        // Prioriza palavras "Não vistas" (!w.seen) e se não houver, usa as de revisão SRS.
+let availableWords = state.words.filter(w => !w.seen);
+
+        if (availableWords.length === 0) {
+             // Fallback para a lista padrão de revisão (SRS L>0)
+             availableWords = getWordsForReview().filter(w => w.seen);
+// Exclui 'newWords' que já foram tratadas acima
+        }
+
+        if (availableWords.length === 0) return null;
+const word = availableWords[Math.floor(Math.random() * availableWords.length)];
+
+        // Pergunta: Kanji/Kana -> Tradução (70%) ou Tradução -> Kanji/Kana (30%)
+        const questionType = Math.random() < 0.7 ?
+'wordToTranslation' : 'translationToWord';
+        let text, hint, answer, xpKey = word.jlpt;
+if (questionType === 'wordToTranslation') {
+            text = word.text + ' (' + word.reading + ')';
+hint = 'Qual a tradução?';
+            answer = word.translation;
+        } else {
+            text = word.translation;
+hint = 'Qual a palavra em Japonês (Kanji/Kana)?';
+            // Aceita tanto o Kanji/Kana quanto a leitura. Usa "/" para permitir ambos.
+            answer = `${word.text}/${word.reading}`; 
+        }
+
+        return { type: 'voc', question: { word: word }, text: text, hint: hint, answer: answer, xpKey: xpKey };
+} else if (type === 'hiragana' || type === 'katakana') { 
+        // Usa os arrays FULL com combinações
+        const chars = type === 'hiragana' ?
+HIRAGANA_CHARS_FULL : KATAKANA_CHARS_FULL;
+        const romanji = type === 'hiragana' ? HIRAGANA_ROMANJI_FULL : KATAKANA_ROMANJI_FULL;
+        const stats = state.alphaStats;
+// Seleção ponderada (mais erros = mais chances, menos acertos = mais chances)
+        let weightedChars = [];
+chars.forEach((char, index) => {
+            const charStats = stats[char] || { correct: 0, wrong: 0 };
+            // Peso: Inverso dos acertos (mínimo 1 para chars não vistos) + erros
+            const weight = Math.max(1, ALPHA_GOLD_THRESHOLD - charStats.correct) + charStats.wrong * 2;
+            for (let i = 0; i < weight; i++) {
+        
+        weightedChars.push({ char: char, romaji: romanji[index] });
+            }
+        });
+if (weightedChars.length === 0) return null; 
+
+        // Seleciona um caractere aleatório da lista ponderada 
+        const selectedChar = weightedChars[Math.floor(Math.random() * weightedChars.length)];
+// Força a pergunta a ser sempre Caractere -> Romaji
+        const questionType = 'charToRomaji';
+let text, hint, answer, xpKey = type; 
+        
+        // Usa apenas a lógica Caractere -> Romaji
+        text = selectedChar.char;
+hint = 'Qual a leitura (romaji)?'; 
+        answer = selectedChar.romaji; 
+        
+        return { type: type, question: { char: selectedChar.char }, text: text, hint: hint, answer: answer, xpKey: xpKey };
+} else if (type === 'kanji') { 
+        // === QUIZ DE KANJI FOCADO EM LEITURA ROMAJI (Mantido) ===
+        const kanjiList = state.kanji.filter(k => k.on || k.kun);
+// Filtra apenas Kanijs com leituras
+        const stats = state.kanjiStats;
+if (kanjiList.length === 0) {
+             // Se não houver kanji pessoal, usa os exemplos (se tiver leituras)
+             const exampleKanjiList = KANJI_EXAMPLES.filter(k => k.on || k.kun);
+if (exampleKanjiList.length > 0) {
+                 kanjiList.push(...exampleKanjiList);
+}
+        }
+        
+        if (kanjiList.length === 0) return null;
+// Seleção ponderada (mais erros = mais chances)
+        let weightedKanji = [];
+kanjiList.forEach(k => {
+            const kStats = stats[k.char] || { correct: 0, wrong: 0 };
+            const weight = Math.max(1, ALPHA_GOLD_THRESHOLD - kStats.correct) + kStats.wrong * 2;
+            for (let i = 0; i < weight; i++) {
+                weightedKanji.push(k);
+            }
+     
+   });
+        if (weightedKanji.length === 0) return null; 
+
+        const selectedKanji = weightedKanji[Math.floor(Math.random() * weightedKanji.length)];
+// Combina todas as leituras On e Kun em uma única string de resposta esperada, separadas por '/'.
+const allReadings = [selectedKanji.on, selectedKanji.kun]
+                            .filter(r => r && r.trim() !== '')
+                            .join('/');
+if (allReadings.length === 0) {
+            return getQuizQuestion('kanji');
+}
+
+        const text = selectedKanji.char;
+        const hint = `Qual(is) a(s) leitura(s) On/Kun?
+(Ex: ${selectedKanji.meaning}). Digite em Romaji/Kana.`;
+        
+        return {
+            type: 'kanji',
+            question: { char: selectedKanji.char },
+            text: text,
+            hint: hint,
+            answer: allReadings, 
+            xpKey: 'kanji' 
+        };
+}
+    return null;
+} 
+
+function openQuizModal(type) { 
+    currentQuiz.type = type;
+    currentQuiz.totalCorrect = 0;
+// O sistema de questões 'questions' é ignorado; usamos getQuizQuestion diretamente
+    const question = getQuizQuestion(type);
+if (!question) { 
+        alert(type === 'voc' ? 'Você não tem palavras novas (Não vistas) ou pendentes de revisão SRS.' : 'Você não tem itens para quiz neste momento! Adicione mais itens ou complete todos os quizzes.');
+return; 
+    } 
+    currentQuiz.question = question; 
+    document.getElementById('quiz-title').textContent = type === 'voc' ?
+'Quiz de Vocabulário' : type === 'hiragana' ?
+    'Quiz de Hiragana' : type === 'katakana' ?
+'Quiz de Katakana' : 'Quiz de Kanji'; 
+    document.getElementById('quiz-question-text').textContent = question.text;
+    document.getElementById('quiz-translation-hint').textContent = question.hint; 
+    document.getElementById('quiz-feedback').textContent = ''; 
+    document.getElementById('quiz-answer-input').value = '';
+document.getElementById('quiz-answer-input').disabled = false; 
+    document.getElementById('quiz-submit-btn').style.display = 'inline-block'; 
+    document.getElementById('quiz-next-btn').style.display = 'none'; 
+    document.getElementById('quiz-modal').classList.add('active');
+    setTimeout(() => document.getElementById('quiz-answer-input').focus(), 100);
+// Auto-pronúncia para quizzes de caracteres/kanji
+    if (type !== 'voc' && state.settings.sound) {
+        speak(question.text, 'ja-JP');
+}
+} 
+
+function closeQuizModal() { 
+    document.getElementById('quiz-modal').classList.remove('active'); 
+    // Garante que o quiz completado conte para as conquistas
+    if (currentQuiz.totalCorrect > 0) {
+        checkAchievements(state.achievements.find(a => a.type === 'quiz')?.current + 1 || 1, 'quiz');
+}
+    updateUI(); 
+} 
+
+function checkModalAnswer() { 
+    const inputEl = document.getElementById('quiz-answer-input');
+const feedbackEl = document.getElementById('quiz-feedback'); 
+    const userAnswer = inputEl.value.trim().toLowerCase(); 
+    
+    // Usa a resposta completa (que pode conter / ou ;)
+    const correctAnswerRaw = currentQuiz.question.answer.trim().toLowerCase();
+// Aceita múltiplas respostas separadas por / ou ;
+    const answers = correctAnswerRaw.split(/[\/;]/).map(a => a.trim().toLowerCase()).filter(a => a);
+const isCorrect = answers.includes(userAnswer); 
+
+    if (isCorrect) { 
+        feedbackEl.textContent = '✅ Correto!';
+feedbackEl.style.color = 'var(--success)'; 
+        currentQuiz.totalCorrect++; 
+        const xpAmount = QUIZ_XP_BY_JLPT[currentQuiz.question.xpKey] ||
+        0; 
+        addXP(xpAmount);
+// Atualiza estatísticas (Acerto) E CHECAGEM DE PROFICIÊNCIA (PONTO 3)
+        if (currentQuiz.type === 'voc') { 
+            const word = currentQuiz.question.question.word;
+const index = getWordIndex(word.id); 
+            if (index !== -1) { 
+                const oldCorrect = state.words[index].stats.correct;
+state.words[index].stats.correct++;
+                const newCorrect = state.words[index].stats.correct;
+
+                // Checagem de Proficiência de Vocabulário
+                if (oldCorrect < WORD_SILVER_THRESHOLD && newCorrect >= WORD_SILVER_THRESHOLD) {
+                    notifQueue.push({ type: 'proficiency', tier: 'Prata', item: word.text });
+} else if (oldCorrect < WORD_GOLD_THRESHOLD && newCorrect >= WORD_GOLD_THRESHOLD) {
+                    notifQueue.push({ type: 'proficiency', tier: 'Ouro', item: word.text });
+}
+
+                state.words[index].stats.last = new Date().toISOString();
+// Marca como vista se for a primeira vez
+                state.words[index].seen = true;
+updateWordSRS(word.id, true);
+            } 
+        } else if (currentQuiz.type === 'hiragana' || currentQuiz.type === 'katakana') { 
+            const char = currentQuiz.question.question.char;
+state.alphaStats[char] = state.alphaStats[char] || { correct: 0, wrong: 0 }; 
+            const oldCorrect = state.alphaStats[char].correct;
+            state.alphaStats[char].correct++;
+            const newCorrect = state.alphaStats[char].correct;
+// Checagem de Proficiência de Alfabeto
+            const typeName = currentQuiz.type === 'hiragana' ?
+'Hiragana' : 'Katakana';
+            if (oldCorrect < ALPHA_SILVER_THRESHOLD && newCorrect >= ALPHA_SILVER_THRESHOLD) {
+                notifQueue.push({ type: 'proficiency', tier: 'Prata', item: char, type_name: typeName });
+} else if (oldCorrect < ALPHA_GOLD_THRESHOLD && newCorrect >= ALPHA_GOLD_THRESHOLD) {
+                notifQueue.push({ type: 'proficiency', tier: 'Ouro', item: char, type_name: typeName });
+}
+
+            checkAchievements(null, currentQuiz.type === 'hiragana' ? 'hira_correct' : 'kata_correct');
+} else if (currentQuiz.type === 'kanji') { 
+            const char = currentQuiz.question.question.char;
+state.kanjiStats[char] = state.kanjiStats[char] ||
+            { correct: 0, wrong: 0 }; 
+            const oldCorrect = state.kanjiStats[char].correct;
+            state.kanjiStats[char].correct++;
+            const newCorrect = state.kanjiStats[char].correct;
+// Checagem de Proficiência de Kanji
+            if (oldCorrect < ALPHA_SILVER_THRESHOLD && newCorrect >= ALPHA_SILVER_THRESHOLD) {
+                notifQueue.push({ type: 'proficiency', tier: 'Prata', item: char, type_name: 'Kanji' });
+} else if (oldCorrect < ALPHA_GOLD_THRESHOLD && newCorrect >= ALPHA_GOLD_THRESHOLD) {
+                notifQueue.push({ type: 'proficiency', tier: 'Ouro', item: char, type_name: 'Kanji' });
+}
+
+            checkAchievements(null, 'kanji_correct');
+} 
+
+        // Processa a fila para mostrar as notificações
+        processNotifQueue();
+} else {
+        feedbackEl.textContent = `❌ Incorreto! A resposta era: ${answers.join(' / ')}`;
+feedbackEl.style.color = 'var(--danger)';
+
+        // Atualiza estatísticas (Erro)
+        if (currentQuiz.type === 'voc') { 
+            const word = currentQuiz.question.question.word;
+const index = getWordIndex(word.id); 
+            if (index !== -1) { 
+                state.words[index].stats.wrong++;
+state.words[index].stats.last = new Date().toISOString();
+                // Se errou a revisão, o SRS é rebaixado
+                updateWordSRS(word.id, false);
+} 
+        } else if (currentQuiz.type === 'hiragana' || currentQuiz.type === 'katakana') { 
+            const char = currentQuiz.question.question.char;
+state.alphaStats[char] = state.alphaStats[char] || { correct: 0, wrong: 0 }; 
+            state.alphaStats[char].wrong++;
+} else if (currentQuiz.type === 'kanji') { 
+            const char = currentQuiz.question.question.char;
+state.kanjiStats[char] = state.kanjiStats[char] ||
+            { correct: 0, wrong: 0 }; 
+            state.kanjiStats[char].wrong++;
+} 
+    } 
+    
+    document.getElementById('quiz-submit-btn').style.display = 'none'; 
+    document.getElementById('quiz-next-btn').style.display = 'inline-block';
+inputEl.disabled = true; 
+    saveState(); 
+} 
+
+function modalNext() { 
+    const nextQuestion = getQuizQuestion(currentQuiz.type);
+if (!nextQuestion) { 
+        alert(`Fim do Quiz! Você acertou ${currentQuiz.totalCorrect} questões.`); 
+        closeQuizModal(); 
+        return;
+} 
+    currentQuiz.question = nextQuestion; 
+    document.getElementById('quiz-question-text').textContent = nextQuestion.text; 
+    document.getElementById('quiz-translation-hint').textContent = nextQuestion.hint; 
+    document.getElementById('quiz-feedback').textContent = ''; 
+    document.getElementById('quiz-answer-input').value = '';
+document.getElementById('quiz-answer-input').disabled = false;
+    document.getElementById('quiz-submit-btn').style.display = 'inline-block'; 
+    document.getElementById('quiz-next-btn').style.display = 'none'; 
+    
+    setTimeout(() => document.getElementById('quiz-answer-input').focus(), 100);
+// Auto-pronúncia para quizzes de caracteres/kanji
+    if (currentQuiz.type !== 'voc' && state.settings.sound) {
+        speak(nextQuestion.text, 'ja-JP');
+}
+}
+
+/* ===== IMPORT / EXPORT / RESET (Mantido) ===== */
+function exportJSON() {
+    saveState();
+// Garante o estado mais recente
+    const dataStr = JSON.stringify(state, null, 2);
+const blob = new Blob([dataStr], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+a.download = `jap-dex_backup_${new Date().toISOString().slice(0, 10)}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    alert('Dados exportados com sucesso!');
+}
+
+function importJSON(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+reader.onload = function(e) {
+        try {
+            const importedData = JSON.parse(e.target.result);
+if (!importedData.words || !importedData.xp) {
+                alert('Erro na importação: O arquivo JSON parece estar corrompido ou não é um backup válido do Jap-Dex.');
+return;
+            }
+
+            if (confirm('Deseja MESCLAR os dados importados com o progresso atual? Clique em "Cancelar" para SUBSTITUIR completamente.')) {
+                // Mesclar (Lógica de Mesclagem)
+                // 1. XP/Level: Usa o maior XP
+                state.xp = Math.max(state.xp, importedData.xp || 0);
+// 2. Palavras: Adiciona palavras novas, atualiza as existentes com base no ID
+                const importedWordsMap = new Map(importedData.words.map(w => [w.id, w]));
+const currentWordsMap = new Map(state.words.map(w => [w.id, w]));
+                
+                importedWordsMap.forEach((impWord, id) => {
+                    const currentWord = currentWordsMap.get(id);
+                    if (currentWord) {
+                        // Mescla, priorizando o progresso (acertos/erros/srs) mais alto
+             
+           currentWord.text = impWord.text;
+                        currentWord.reading = impWord.reading;
+                        currentWord.translation = impWord.translation;
+                        currentWord.jlpt = impWord.jlpt;
+         
+               currentWord.category = impWord.category;
+                        currentWord.tags = impWord.tags;
+                        currentWord.notes = impWord.notes;
+                        currentWord.seen = currentWord.seen || impWord.seen;
+   
+                     currentWord.stats.correct = Math.max(currentWord.stats.correct, impWord.stats?.correct || 0);
+                        currentWord.stats.wrong = Math.max(currentWord.stats.wrong, impWord.stats?.wrong || 0);
+                        currentWord.stats.srs_level = Math.max(currentWord.stats.srs_level, impWord.stats?.srs_level ||
+0);
+                        // A data de revisão é mais complexa, manter a mais antiga (mais próxima)
+                        if (!currentWord.stats.next_review_date || (impWord.stats?.next_review_date && new Date(impWord.stats.next_review_date) < new Date(currentWord.stats.next_review_date))) {
+                            currentWord.stats.next_review_date = impWord.stats.next_review_date;
+}
+
+                    } else {
+                        // Nova palavra
+                        state.words.push(impWord);
+}
+                });
+// 3. Kanji: Mesclagem similar (simples, prioriza a versão do save)
+                const importedKanjiMap = new Map(importedData.kanji.map(k => [k.id, k]));
+const currentKanjiMap = new Map(state.kanji.map(k => [k.id, k]));
+                
+                importedKanjiMap.forEach((impKanji, id) => {
+                    if (!currentKanjiMap.has(id)) {
+                        state.kanji.push(impKanji);
+                    }
+                });
+// 4. Estatísticas de Alfabeto/Kanji (usa o maior valor)
+                Object.keys(importedData.alphaStats || {}).forEach(char => {
+                    state.alphaStats[char] = state.alphaStats[char] || { correct: 0, wrong: 0 };
+                    state.alphaStats[char].correct = Math.max(state.alphaStats[char].correct, importedData.alphaStats[char].correct || 0);
+                  
+  state.alphaStats[char].wrong = Math.max(state.alphaStats[char].wrong, importedData.alphaStats[char].wrong || 0);
+                });
+Object.keys(importedData.kanjiStats || {}).forEach(char => {
+                    state.kanjiStats[char] = state.kanjiStats[char] || { correct: 0, wrong: 0 };
+                    state.kanjiStats[char].correct = Math.max(state.kanjiStats[char].correct, importedData.kanjiStats[char].correct || 0);
+                    state.kanjiStats[char].wrong = Math.max(state.kanjiStats[char].wrong, importedData.kanjiStats[char].wrong || 0);
+                });
+// 5. Conquistas: Mescla (mantém unlocked=true se em qualquer um estiver true)
+                const importedAchMap = new Map((importedData.achievements || []).map(a => [a.id, a]));
+state.achievements = state.achievements.map(localAch => { 
+                    const importedAch = importedAchMap.get(localAch.id); 
+                    if (importedAch) { 
+                        localAch.current = Math.max(localAch.current, importedAch.current); 
+                    
+    localAch.unlocked = localAch.unlocked || importedAch.unlocked; 
+                    } 
+                    return localAch; 
+                });
+} else { 
+                // Substituir 
+                state = importedData;
+} 
+            
+            // Garante que o estado importado tenha as novas estruturas e IDs (para palavras/kanji) 
+            state.words.forEach(w=> { 
+                w.stats = w.stats || {correct:0,wrong:0,last:null,srs_level:0,next_review_date:null}; 
+                w.stats.srs_level = w.stats.srs_level || 0; 
+     
+           w.stats.next_review_date = w.stats.next_review_date || null; 
+                if(typeof w.seen !== 'boolean') w.seen = false; 
+                if(w.id === undefined) w.id = Date.now() + Math.random(); 
+            });
+state.kanji.forEach(k => {
+                 if(k.id === undefined) k.id = Date.now() + Math.random();
+            });
+// Revalida o nível de XP
+            let newLevel = 1;
+for (let i = LEVELS.length - 1; i >= 0; i--) {
+                if (state.xp >= LEVELS[i].xp) {
+                    newLevel = LEVELS[i].level;
+break;
+                }
+            }
+            state.level = newLevel;
+saveState();
+            checkAllAchievements();
+            updateUI();
+            alert('Dados importados e mesclados/substituídos com sucesso!');
+
+        } catch (e) {
+            console.error(e);
+alert('Erro ao processar o arquivo JSON. Verifique o console para mais detalhes.');
+        }
+    };
+    reader.readAsText(file);
+}
+
+function resetProgress() {
+    if (confirm('ATENÇÃO: Esta ação é irreversível e apagará TODO o seu progresso (palavras, kanji, XP, etc.). Tem certeza?')) {
+        localStorage.removeItem(STORAGE_KEY);
+state = defaultState();
+        saveState();
+        updateUI();
+        alert('Progresso resetado. Recarregando a página.');
+        window.location.reload();
+}
+}
+
+/* ===== INICIALIZAÇÃO ===== */
+document.addEventListener('DOMContentLoaded', init);
+document.getElementById('setting-sound').addEventListener('change', function() {
+    state.settings.sound = !this.checked; // Invertido: checked = 'desativar sons'
+    saveState();
+});
+function init() {
+  try {
+    // Garante que o estado importado tenha as novas estruturas e IDs (para palavras/kanji) 
+    state.words.forEach(w=> { 
+        w.stats = w.stats || {correct:0,wrong:0,last:null,srs_level:0,next_review_date:null}; 
+        w.stats.srs_level = w.stats.srs_level || 0; 
+        w.stats.next_review_date = w.stats.next_review_date || null; 
+        if(typeof w.seen !== 'boolean') w.seen = false; 
+        if(w.id === undefined) w.id = Date.now() + Math.random(); 
+ 
+   });
+    state.kanji.forEach(k => {
+         if(k.id === undefined) k.id = Date.now() + Math.random();
+    });
+// Pré-carrega as vozes (boa prática)
+    if ('speechSynthesis' in window) {
+        window.speechSynthesis.getVoices();
+}
+
+    saveState();
+    updateUI();
+    // Garante que a aba 'Dicionário' esteja ativa no início
+    const dictLink = document.querySelector('.sidebar-links a[onclick*="switchTab(\'dict\', this)"]');
+if (dictLink) {
+        switchTab('dict', dictLink);
+} else {
+        // Fallback se o seletor falhar (usa o primeiro link)
+        switchTab('dict', document.querySelector('.sidebar-links a'));
+}
+    checkAllAchievements(); 
+  } catch (e) {
+    console.error("Erro fatal durante a inicialização. As funções essenciais serão expostas.", e);
+}
+
+  /* Exposição de funções essenciais - OBRIGATÓRIO PARA ONCLICK */
+  window.switchTab = switchTab;
+  window.addWord = addWord;
+  window.clearForm = clearForm;
+  window.renderList = renderList;
+  window.openQuizModal = openQuizModal;
+  window.closeQuizModal = closeQuizModal;
+  window.checkModalAnswer = checkModalAnswer;
+  window.modalNext = modalNext;
+  window.addKanji = addKanji;
+  window.deleteKanji = deleteKanji;
+  window.deleteWord = deleteWord;
+  window.toggleWordSeen = toggleWordSeen;
+  window.toggleAllWordsSeen = toggleAllWordsSeen;
+  window.exportJSON = exportJSON;
+  window.importJSON = importJSON;
+  window.updateUI = updateUI;
+  window.openEditModal = openEditModal; 
+  window.closeEditModal = closeEditModal;
+  window.saveEditedWord = saveEditedWord;
+  window.openKanjiEditModal = openKanjiEditModal;
+  window.closeKanjiEditModal = closeKanjiEditModal;
+  window.saveEditedKanji = saveEditedKanji;
+  window.resetProgress = resetProgress;
+  window.speak = speak; 
+}
+</script>
+</body>
+</html>
