@@ -1,10 +1,22 @@
-# 📱 Jap-Dex — v4.7
+# 📱 Jap-Dex — v4.8
 
 Aplicativo de estudo de japonês: **vocabulário, kanji, alfabetos (hiragana/katakana),
 SRS (revisão espaçada), quizzes, XP/níveis e 50 conquistas** — 100% offline.
 
 Original: arquivo único `3.8.7.html` (2345 linhas) → reestruturado em módulos
 HTML + CSS + JS (ES modules), com correção de bugs e sanitização de HTML.
+
+### Melhorias v4.8
+
+- **Menu lateral:** todos os menus (Alfabetos, Configurações etc.) em um botão
+  ☰ fixo — abre um drawer com as abas (fecha ao escolher aba, no Esc ou no fundo).
+- **Voz japonesa:** letras do alfabeto emitem som em japonês. Cadeia em 4 níveis:
+  áudio local dos kana (208 MP3s em `assets/audio/kana/`, offline) → voz ja-JP do
+  sistema → TTS online (Google, exige a meta `referrer: no-referrer`) → voz padrão.
+- **Seletor de alfabetos:** a aba Alfabetos mostra Hiragana, Katakana ou Kanji
+  por vez (um por clique), em vez de tudo empilhado.
+- **Ícone do projeto:** `favicon.ico` + `assets/icon.png` (degradê navy, hinomaru,
+  glifo あ) → janela do Electron, ícones Android (`@capacitor/assets`) e PWA.
 
 ## Estrutura
 
@@ -59,8 +71,8 @@ npm.cmd run dist         # gera instalador NSIS + portátil em dist/
 ```
 
 Saída em `dist/`:
-- `Jap-Dex-4.7.0-instalador.exe` — instalador NSIS (escolhe diretório, atalhos)
-- `Jap-Dex-4.7.0-portatil.exe` — executável portátil
+- `Jap-Dex-4.8.0-instalador.exe` — instalador NSIS (escolhe diretório, atalhos)
+- `Jap-Dex-4.8.0-portatil.exe` — executável portátil
 
 > **Windows:** usar `npm.cmd` (o `npm.ps1` é bloqueado pela ExecutionPolicy).
 
