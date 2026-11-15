@@ -1,0 +1,239 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Jap-Dex — v4.7 (Busca Kanji, SRS L0, Pronúncia Corrigida)</title>
+
+  <!-- Font Awesome local (100% offline) -->
+  <link rel="stylesheet" href="assets/icons/fa/css/all.min.css"/>
+
+  <!-- CSS modular: ordem importa (base -> layout -> componentes -> responsivo) -->
+  <link rel="stylesheet" href="css/base.css"/>
+  <link rel="stylesheet" href="css/layout.css"/>
+  <link rel="stylesheet" href="css/components.css"/>
+  <link rel="stylesheet" href="css/responsive.css"/>
+</head>
+<body>
+
+
+<div class="sidebar">
+  <h1>Jap-Dex <span style="font-size: 12px; opacity: 0.6;">v4.7</span></h1>
+    <div class="level-info">
+    <div id="level-display">Level 1</div>
+    <div class="level-bar"><div id="xp-progress" class="level-progress" style="width: 0%;"></div></div>
+    <div id="xp-label" class="xp-label">0 XP / 100 XP</div>
+  </div>
+
+  <div class="sidebar-links" id="sidebar-links">
+    <a href="#" onclick="switchTab('dict', this);"><i class="fas fa-book"></i> Dicionário</a>
+    <a href="#" onclick="switchTab('alphabets', this);"><i class="fas fa-sort-alpha-down"></i> Alfabetos</a>
+    <a href="#" onclick="switchTab('achievements', this);"><i class="fas fa-trophy"></i> Conquistas</a>
+    <a href="#" onclick="switchTab('stats', this);"><i class="fas fa-chart-bar"></i> Estatísticas</a>
+    <a href="#" onclick="switchTab('settings', this);"><i class="fas fa-cog"></i> Configurações</a> </div>
+</div>
+
+<div class="main-content">
+  <div id="dict" class="tab-content active">
+    <div class="card">
+      <h2>Adicionar Nova Palavra</h2>
+      <form id="add-word-form">
+        <div class="form-group"><label for="word-text">Palavra (Kanji/Kana):</label><input type="text" id="word-text" required></div>
+        <div class="form-group"><label for="word-reading">Leitura (Furigana/Kana):</label><input type="text" id="word-reading" required></div>
+        <div class="form-group"><label for="word-translation">Tradução (Português):</label><input type="text" id="word-translation" required></div>
+        <div class="form-group">
+          <label for="word-jlpt">Nível JLPT (XP Bônus):</label>
+          <select id="word-jlpt">
+            <option value="N5">N5 (Fácil)</option><option value="N4">N4</option><option value="N3">N3</option>
+            <option value="N2">N2</option><option value="N1">N1 (Difícil)</option><option value="None" selected>Nenhum</option>
+          </select>
+        </div>
+        <div class="form-group"><label for="word-category">Categoria (ex: Verbo, Substantivo, Animais...):</label><input type="text" id="word-category"></div>
+        <div class="form-group"><label for="word-tags">Tags (separadas por vírgula):</label><input type="text" id="word-tags"></div>
+        <div class="form-group"><label for="word-notes">Notas:</label><textarea id="word-notes"></textarea></div>
+        <button type="submit" class="btn btn-primary">Adicionar Palavra</button>
+        <button type="button" class="btn btn-secondary" onclick="clearForm('add-word-form')">Limpar</button>
+      </form>
+    </div>
+
+    <div class="card" id="srs-status-card">
+      <h2>Revisão Espaçada (SRS)</h2>
+      <p style="margin-bottom: 10px;"><strong>Palavras prontas para Revisão:</strong> <span id="srs-review-count" style="font-weight: 700; color: var(--gold1);">0</span></p>
+      <button class="btn btn-primary" onclick="openQuizModal('voc')"><i class="fas fa-redo"></i> Iniciar Revisão (Prioriza SRS)</button>
+    </div>
+
+    <div class="card">
+      <h2>Lista de Palavras (<span id="word-count">0</span>)</h2>
+      <div class="form-group" style="display:flex;gap:10px;">
+        <label class="sr-only" for="search-input">Buscar palavras</label>
+        <input type="text" id="search-input" placeholder="Buscar" onkeyup="renderList()">
+        <label class="sr-only" for="filter-jlpt">Filtrar por nível JLPT</label>
+        <select type="text" id="filter-jlpt" onchange="renderList()">
+          <option value="">Todos JLPT</option>
+          <option value="N5">N5</option><option value="N4">N4</option><option value="N3">N3</option>
+          <option value="N2">N2</option><option value="N1">N1</option><option value="None">Nenhum</option>
+        </select>
+        <label class="sr-only" for="filter-category">Filtrar por categoria</label>
+        <select id="filter-category" onchange="renderList()">
+          <option value="">Todas Categorias</option>
+        </select>
+      </div>
+	  <div class="form-group" style="margin-top: 15px;">
+		<button class="btn btn-secondary" onclick="toggleAllWordsSeen(true)"><i class="fas fa-eye"></i> Visualizar Todas</button>
+		<button class="btn btn-secondary" onclick="toggleAllWordsSeen(false)"><i class="fas fa-eye-slash"></i> Remover Visualizações</button>
+	  </div>
+      <ul id="word-list" class="word-list">
+        </ul>
+    </div>
+  </div>
+
+  <div id="alphabets" class="tab-content">
+    <div class="card">
+      <h2>Hiragana</h2>
+      <div id="hiragana-grid" class="alphabet-grid"></div>
+      <button class="btn btn-success" onclick="openQuizModal('hiragana')"><i class="fas fa-h-square"></i> Iniciar Quiz de Hiragana</button>
+    </div>
+    
+    <div class="card">
+      <h2>Katakana</h2>
+      <div id="katakana-grid" class="alphabet-grid"></div>
+      <button class="btn btn-success" onclick="openQuizModal('katakana')"><i class="fas fa-k-square"></i> Iniciar Quiz de Katakana</button>
+    </div>
+
+    <div class="card">
+      <h2>Kanji Pessoais (<span id="kanji-count">0</span>)</h2>
+      <form id="add-kanji-form">
+        <div class="form-group"><label for="kanji-char">Kanji:</label><input type="text" id="kanji-char" maxlength="1" required></div>
+        <div class="form-group"><label for="kanji-meaning">Significado(s):</label><input type="text" id="kanji-meaning" required></div>
+        <div class="form-group"><label for="kanji-reading-on">Leitura On'yomi:</label><input type="text" id="kanji-reading-on"></div>
+        <div class="form-group"><label for="kanji-reading-kun">Leitura Kun'yomi:</label><input type="text" id="kanji-reading-kun"></div>
+        <button type="submit" class="btn btn-primary">Adicionar Kanji</button>
+        <button type="button" class="btn btn-secondary" onclick="clearForm('add-kanji-form')">Limpar</button>
+      </form>
+      <div class="form-group" style="margin-top: 20px;">
+        <label class="sr-only" for="kanji-search-input">Buscar kanji ou significado</label>
+        <input type="text" id="kanji-search-input" placeholder="Buscar Kanji ou Significado..." onkeyup="renderAlphabets()">
+      </div>
+      <div id="kanji-grid" class="kanji-grid" style="margin-top: 20px;"></div>
+      <button class="btn btn-success" onclick="openQuizModal('kanji')"><i class="fas fa-sign"></i> Iniciar Quiz de Kanji</button>
+    </div>
+  </div>
+
+  <div id="achievements" class="tab-content">
+    <div class="card">
+      <h2>Minhas Conquistas (<span id="unlocked-achievements-count">0</span> / <span id="total-achievements-count">0</span>)</h2>
+      <div id="achievement-grid" class="achievement-grid">
+        </div>
+    </div>
+  </div>
+  
+  <div id="stats" class="tab-content">
+    <div class="card">
+      <h2>Estatísticas Gerais</h2>
+      <p><strong>Total de Palavras:</strong> <span id="stat-words">0</span></p>
+      <p><strong>Total de Kanji Pessoais:</strong> <span id="stat-kanji">0</span></p>
+      <p><strong>Conquistas Desbloqueadas:</strong> <span id="stat-achievements">0</span></p>
+      <p><strong>Categorias Únicas Registradas:</strong> <span id="stat-categories">0</span></p>
+      <p><strong>XP Total:</strong> <span id="stat-xp">0</span></p>
+    </div>
+  </div>
+  
+  <div id="settings" class="tab-content">
+    <div class="card">
+      <h2>Quiz de Vocabulário</h2>
+      <p>Inicie o treino de vocabulário:</p>
+      <button class="btn btn-primary" onclick="openQuizModal('voc')"><i class="fas fa-graduation-cap"></i> Vocabulário</button>
+      <p style="margin-top:15px; font-size:0.9em; color:var(--muted);">Os quizzes de Alfabetos/Kanji estão na aba "Alfabetos".</p>
+    </div>
+    
+    <div class="card">
+      <h2>Configurações e Manutenção</h2>
+      <h3 style="margin-top:20px;">Backup de Dados</h3>
+      <button class="btn btn-primary" onclick="exportJSON()"><i class="fas fa-download"></i> Exportar JSON</button>
+      <button class="btn btn-secondary" onclick="document.getElementById('import-input').click()"><i class="fas fa-upload"></i> Importar JSON</button>
+      <input type="file" id="import-input" accept="application/json" style="display:none;" onchange="importJSON(event)">
+      <p style="margin-top:10px; font-size:0.9em; color:var(--muted);">Importar pode MESCLAR ou SUBSTITUIR os dados atuais. Cuidado.</p>
+    
+      <h3 style="margin-top:20px;">Configurações</h3>
+      <div class="form-group toggle-switch-container">
+        <label for="setting-sound" class="toggle-label">Desativar Sons (XP, Level Up, Conquista)</label>
+        <label class="switch">
+          <input type="checkbox" id="setting-sound">
+          <span class="slider round"></span>
+        </label>
+      </div>
+
+      <h3 style="margin-top:20px; color: var(--danger);">Resetar Progresso</h3>
+      <p style="color:var(--muted);">Esta ação irá apagar TODOS os seus dados salvos (palavras, XP, estatísticas). É irreversível.</p>
+      <button class="btn btn-danger" onclick="resetProgress()"><i class="fas fa-trash-alt"></i> Resetar Progresso</button>
+    </div>
+  </div>
+
+</div>
+
+<div id="quiz-modal" class="modal-overlay">
+  <div class="modal-content">
+    <h3 id="quiz-title">Quiz de Vocabulário</h3>
+    <div id="quiz-question-container">
+      <div id="quiz-question-text">Pergunta</div>
+      <div id="quiz-translation-hint">Dica (Tradução)</div>
+      <label class="sr-only" for="quiz-answer-input">Sua resposta</label>
+      <input type="text" id="quiz-answer-input" placeholder="Sua resposta..." onkeydown="if(event.key==='Enter') document.getElementById('quiz-submit-btn').click();">
+      <div id="quiz-feedback"></div>
+    </div>
+    <div style="text-align:right; margin-top:20px;">
+      <button class="btn btn-secondary" onclick="closeQuizModal()">Fechar</button>
+      <button id="quiz-submit-btn" class="btn btn-primary" onclick="checkModalAnswer()">Verificar</button>
+      <button id="quiz-next-btn" class="btn btn-success" style="display:none;" onclick="modalNext()">Próxima</button>
+    </div>
+  </div>
+</div>
+
+<div id="edit-word-modal" class="modal-overlay">
+  <div class="modal-content">
+    <h3>Editar Palavra</h3>
+    <form id="edit-word-form">
+      <input type="hidden" id="edit-word-id">
+      <div class="form-group"><label for="edit-word-text">Palavra (Kanji/Kana):</label><input type="text" id="edit-word-text" required></div>
+      <div class="form-group"><label for="edit-word-reading">Leitura (Furigana/Kana):</label><input type="text" id="edit-word-reading" required></div>
+      <div class="form-group"><label for="edit-word-translation">Tradução (Português):</label><input type="text" id="edit-word-translation" required></div>
+      <div class="form-group">
+        <label for="edit-word-jlpt">Nível JLPT (XP Bônus):</label>
+        <select id="edit-word-jlpt">
+          <option value="N5">N5 (Fácil)</option><option value="N4">N4</option><option value="N3">N3</option>
+          <option value="N2">N2</option><option value="N1">N1 (Difícil)</option><option value="None" selected>Nenhum</option>
+        </select>
+      </div>
+      <div class="form-group"><label for="edit-word-category">Categoria (ex: Verbo, Substantivo, Animais...):</label><input type="text" id="edit-word-category"></div>
+      <div class="form-group"><label for="edit-word-tags">Tags (separadas por vírgula):</label><input type="text" id="edit-word-tags"></div>
+      <div class="form-group"><label for="edit-word-notes">Notas:</label><textarea id="edit-word-notes"></textarea></div>
+      <div style="text-align:right; margin-top:20px;">
+        <button type="button" class="btn btn-secondary" onclick="closeEditModal()">Cancelar</button>
+        <button type="submit" class="btn btn-primary">Salvar Alterações</button>
+      </div>
+    </form>
+  </div>
+</div>
+<div id="edit-kanji-modal" class="modal-overlay">
+  <div class="modal-content">
+    <h3>Editar Kanji Pessoal</h3>
+    <form id="edit-kanji-form">
+      <input type="hidden" id="edit-kanji-id">
+      <div class="form-group"><label for="edit-kanji-char">Kanji:</label><input type="text" id="edit-kanji-char" maxlength="1" required></div>
+      <div class="form-group"><label for="edit-kanji-meaning">Significado(s):</label><input type="text" id="edit-kanji-meaning" required></div>
+      <div class="form-group"><label for="edit-kanji-reading-on">Leitura On'yomi:</label><input type="text" id="edit-kanji-reading-on"></div>
+      <div class="form-group"><label for="edit-kanji-reading-kun">Leitura Kun'yomi:</label><input type="text" id="edit-kanji-reading-kun"></div>
+      <div style="text-align:right; margin-top:20px;">
+        <button type="button" class="btn btn-secondary" onclick="closeKanjiEditModal()">Cancelar</button>
+        <button type="submit" class="btn btn-primary">Salvar Alterações</button>
+      </div>
+    </form>
+  </div>
+</div>
+<div class="notif-container" id="notif-container"></div>
+<div class="confetti-container" id="confetti-container"></div>
+
+  <!-- Bootstrap da aplicação (ES module) -->
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>

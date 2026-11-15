@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Jap-Dex</string>
+    <string name="title_activity_main">Jap-Dex</string>
+    <string name="package_name">com.modnar22.japdex</string>
+    <string name="custom_url_scheme">com.modnar22.japdex</string>
+</resources>

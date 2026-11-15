@@ -1,0 +1,17 @@
+/* layout.css - Sidebar, main content e abas (extraido de 3.8.7.html linhas 18-33) */
+/* Sidebar */
+.sidebar{position:fixed;top:0;left:0;bottom:0;width:var(--sidebarW);background:var(--panel);box-shadow:2px 0 5px rgba(0,0,0,0.2);padding:20px;z-index:100;}
+.sidebar h1{color:var(--accent1);margin-top:0;font-size:24px;border-bottom:1px solid var(--card);padding-bottom:10px;margin-bottom:15px;}
+.sidebar-links a{display:block;padding:10px 15px;margin-bottom:5px;border-radius:var(--radius);transition:background-color 0.2s;}
+.sidebar-links a:hover,.sidebar-links a.active{background-color:var(--card);color:var(--accent2);font-weight:600;}
+.sidebar-links a i{margin-right:8px;}
+.level-info{margin-top:20px;padding:10px;background:var(--card);border-radius:var(--radius);text-align:center;}
+.level-info .level-bar{height:10px;background:#444;border-radius:5px;margin-top:5px;overflow:hidden;}
+.level-info .level-progress{height:100%;background:linear-gradient(90deg,var(--accent2),var(--accent1));transition:width 0.3s ease-out;}
+.xp-label{font-size:12px;color:var(--muted);margin-top:5px;}
+
+/* Main Content */
+.main-content{margin-left:var(--sidebarW);padding:20px;min-height:100vh;}
+.tab-content{display:none;}
+.tab-content.active{display:block;}
+

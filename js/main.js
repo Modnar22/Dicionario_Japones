@@ -1,0 +1,100 @@
+/* ===== Jap-Dex — bootstrap da aplicação =====
+   Módulo de entrada: expõe as funções usadas pelos handlers inline
+   (onclick/onchange/onkeyup) em `window` e inicializa a interface.  */
+
+import { state, saveState } from './state.js';
+import { updateUI } from './ui/stats.js';
+import { checkAllAchievements } from './achievementLogic.js';
+import { switchTab, clearForm, speak } from './ui/tabs.js';
+import { renderList } from './ui/wordList.js';
+import { renderAlphabets } from './ui/alphabetGrid.js';
+import {
+  addWord, deleteWord, toggleWordSeen, toggleAllWordsSeen,
+  openEditModal, closeEditModal, saveEditedWord,
+} from './crud/words.js';
+import {
+  addKanji, deleteKanji, openKanjiEditModal,
+  closeKanjiEditModal, saveEditedKanji,
+} from './crud/kanji.js';
+import {
+  openQuizModal, closeQuizModal, checkModalAnswer, modalNext,
+} from './quiz.js';
+import { exportJSON, importJSON, resetProgress } from './io/backup.js';
+
+export function init() {
+  try {
+    // Garante que o estado importado tenha as novas estruturas e IDs (para palavras/kanji)
+    state.words.forEach(w => {
+      w.stats = w.stats || { correct: 0, wrong: 0, last: null, srs_level: 0, next_review_date: null };
+      w.stats.srs_level = w.stats.srs_level || 0;
+      w.stats.next_review_date = w.stats.next_review_date || null;
+      if (typeof w.seen !== 'boolean') w.seen = false;
+      if (w.id === undefined) w.id = Date.now() + Math.random();
+    });
+    state.kanji.forEach(k => {
+      if (k.id === undefined) k.id = Date.now() + Math.random();
+    });
+
+    // Pré-carrega as vozes (boa prática)
+    if ('speechSynthesis' in window) {
+      window.speechSynthesis.getVoices();
+    }
+
+    saveState();
+    updateUI();
+
+    // Garante que a aba 'Dicionário' esteja ativa no início
+    const dictLink = document.querySelector('.sidebar-links a[onclick*="switchTab(\'dict\', this)"]');
+    if (dictLink) {
+      switchTab('dict', dictLink);
+    } else {
+      // Fallback se o seletor falhar (usa o primeiro link)
+      switchTab('dict', document.querySelector('.sidebar-links a'));
+    }
+
+    checkAllAchievements();
+  } catch (e) {
+    console.error('Erro fatal durante a inicialização.', e);
+  }
+}
+
+/* ===== Exposição de funções essenciais - OBRIGATÓRIO PARA ONCLICK =====
+   Módulos ES não colocam nada em `window` automaticamente, então cada
+   função referenciada em um atributo inline precisa ser registrada aqui. */
+Object.assign(window, {
+  switchTab,
+  clearForm,
+  speak,
+  renderList,
+  renderAlphabets,
+  addWord,
+  deleteWord,
+  toggleWordSeen,
+  toggleAllWordsSeen,
+  openEditModal,
+  closeEditModal,
+  saveEditedWord,
+  addKanji,
+  deleteKanji,
+  openKanjiEditModal,
+  closeKanjiEditModal,
+  saveEditedKanji,
+  openQuizModal,
+  closeQuizModal,
+  checkModalAnswer,
+  modalNext,
+  exportJSON,
+  importJSON,
+  resetProgress,
+  updateUI,
+});
+
+/* ===== Listeners globais ===== */
+document.addEventListener('DOMContentLoaded', init);
+
+// Uma única fonte de verdade para o toggle de som
+// (o original tinha ESTE listener duplicado em dois lugares)
+document.getElementById('setting-sound').addEventListener('change', function () {
+  state.settings.sound = !this.checked; // Invertido: checked = 'desativar sons'
+  saveState();
+});

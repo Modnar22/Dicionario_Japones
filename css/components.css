@@ -1,0 +1,175 @@
+/* components.css - Cards, listas, modais, quiz, notificacoes, confetti (extraido de 3.8.7.html linhas 34-207) */
+/* Cards and Forms */
+.card{background:var(--card);padding:20px;border-radius:var(--radius);margin-bottom:20px;box-shadow:0 4px 6px rgba(0,0,0,0.1);}
+.card h2{margin-top:0;border-bottom:1px solid var(--panel);padding-bottom:10px;margin-bottom:15px;color:var(--accent2);}
+.form-group{margin-bottom:15px;}
+.form-group label{display:block;margin-bottom:5px;font-weight:600;}
+.form-group input,.form-group textarea,.form-group select{width:100%;padding:10px;border:1px solid var(--panel);border-radius:var(--radius);background-color:var(--bg1);color:inherit;resize:vertical;}
+.form-group textarea{min-height:80px;}
+.btn{display:inline-block;padding:10px 20px;border:none;border-radius:var(--radius);cursor:pointer;font-weight:600;transition:opacity 0.2s;}
+.btn-primary{background-color:var(--accent1);color:var(--bg1);}
+.btn-secondary{background-color:var(--muted);color:var(--bg1);}
+.btn-success{background-color:var(--success);color:var(--bg1);}
+.btn-danger{background-color:var(--danger);color:#fff;}
+.btn:hover{opacity:0.8;}
+.btn + .btn{margin-left:10px;}
+
+/* Dictionary List */
+.word-list{list-style:none;padding:0;}
+.word-item{background:var(--panel);border-radius:var(--radius);margin-bottom:10px;padding:15px;display:flex;justify-content:space-between;align-items:center;border-left:5px solid var(--accent1); position: relative; /* <-- CORREÇÃO ADICIONADA AQUI */}
+.word-item.seen{opacity:0.6;border-left-color:var(--muted);} 
+.word-item .word-details{flex-grow:1;}
+.word-item .word-text{font-size:1.2em;font-weight:700;color:var(--accent2);}
+.word-item .word-translation{color:var(--muted);}
+.word-item .srs-level-tag{
+    display:inline-block;margin-left:10px;font-size:0.8em;padding:3px 8px;border-radius:8px;font-weight:600;
+    background-color:var(--accent2);color:var(--bg1);
+}
+.word-item .srs-level-tag.srs-0{background-color:var(--muted);color:var(--bg1);}
+.word-item .srs-level-tag.srs-5{background-color:var(--gold1);color:var(--bg1);}
+
+.word-item .word-meta span{display:inline-block;margin-left:10px;font-size:0.8em;padding:3px 8px;border-radius:8px;font-weight:600;}
+.word-item .word-meta .jlpt-tag{background-color:var(--accent1);color:var(--bg1);}
+.word-item .word-meta .cat-tag{background-color:var(--success);color:var(--bg1);}
+.word-actions button{background:none;border:none;color:var(--muted);cursor:pointer;margin-left:8px;font-size:1.1em;}
+.word-actions button:hover{color:var(--accent1);}
+
+/* Alfabetos / Kanji */
+.alphabet-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(70px,1fr));gap:5px;text-align:center;margin-bottom:15px;}
+.char-container{background:var(--card);padding:10px 5px;border-radius:8px;position:relative;transition:all 0.3s;}
+.char-main{font-size:1.8em;font-weight:700;color:var(--accent1);margin-bottom:3px;}
+.char-romaji{font-size:0.7em;color:var(--muted);}
+.kanji-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(100px,1fr));gap:10px;}
+.kanji-card{background:var(--card);padding:15px;border-radius:var(--radius);text-align:center;position:relative;transition:all 0.3s;border: 1px solid var(--card);}
+.kanji-card .kanji-char{font-size:2.5em;font-weight:700;color:var(--accent2);}
+.kanji-card .kanji-meaning{font-size:0.8em;color:var(--muted);margin-top:5px;}
+
+/* Estilos para a Proficiência (Compartilhado entre Kana, Kanji E AGORA PALAVRAS) */
+.char-container.char-silver, .kanji-card.char-silver, .word-item.char-silver {
+  border: 2px solid var(--muted);
+  background-color: rgba(153, 176, 198, 0.1); 
+  box-shadow: 0 0 10px rgba(153, 176, 198, 0.3);
+}
+
+.char-container.char-gold, .kanji-card.char-gold, .word-item.char-gold {
+  border: 3px solid var(--gold1);
+  background-color: rgba(255, 214, 107, 0.1); 
+  box-shadow: 0 0 15px var(--gold2);
+}
+
+/* Garante que o texto principal da palavra fique na cor ouro */
+.word-item.char-gold .word-text {
+  color: var(--gold1);
+}
+
+/* Adicionando o ícone de domínio (Estrela ou Troféu) */
+.char-container:after, .kanji-card:after, .word-item:after {
+  content: '';
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  font-size: 10px;
+}
+.char-container.char-silver:after, .kanji-card.char-silver:after, .word-item.char-silver:after {
+  content: '★';
+  color: var(--muted);
+}
+.char-container.char-gold:after, .kanji-card.char-gold:after, .word-item.char-gold:after {
+  content: '🏆';
+  color: var(--gold1);
+}
+
+/* Conquistas (ATUALIZADO) */
+.achievement-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:15px;}
+.achievement-card{
+    background:var(--panel);padding:15px;border-radius:var(--radius);text-align:center;opacity:0.7;
+    transition:opacity 0.3s,border 0.3s,box-shadow 0.3s;
+    display: flex; flex-direction: column; justify-content: space-between;
+    min-height: 150px; /* Garante altura mínima para uniformidade */
+}
+.achievement-card.unlocked{opacity:1;border:2px solid var(--gold1);box-shadow:0 0 10px var(--gold2);}
+.achievement-card i{font-size:2em;margin-bottom:5px;color:var(--muted);}
+.achievement-card.unlocked i{color:var(--gold1);}
+.achievement-card h4{margin:5px 0 0;font-size:1em;color:#fff;}
+.achievement-card .ach-desc{margin: 0; font-size: 0.8em; color: var(--muted); flex-grow: 1; display: flex; align-items: center; justify-content: center; padding: 5px 0;}
+.achievement-card .ach-progress{margin: 0; font-size: 0.9em; font-weight: 700;}
+.achievement-card.unlocked .ach-progress{color: var(--success);}
+
+
+/* Modals */
+.modal-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background-color:rgba(0,0,0,0.7);z-index:1000;display:none;justify-content:center;align-items:center;overflow-y:auto;}
+.modal-overlay.active{display:flex;}
+.modal-content{background:var(--bg1);padding:30px;border-radius:var(--radius);width:90%;max-width:500px;box-shadow:0 5px 15px rgba(0,0,0,0.3);border:1px solid var(--panel);margin: 20px 0;}
+.modal-content h3{margin-top:0;color:var(--accent2);border-bottom:1px solid var(--panel);padding-bottom:10px;margin-bottom:15px;}
+
+/* Quiz Modal Specific */
+#quiz-question-text{font-size:2em;font-weight:700;text-align:center;margin-bottom:20px;color:var(--accent1);}
+#quiz-translation-hint{color:var(--muted);text-align:center;margin-bottom:10px;font-style:italic;}
+#quiz-answer-input{width:100%;padding:15px;font-size:1.2em;border:2px solid var(--panel);border-radius:var(--radius);background-color:var(--card);color:inherit;text-align:center;}
+#quiz-feedback{text-align:center;margin-top:15px;font-weight:700;min-height:20px;}
+
+/* Toggle Switch */
+.toggle-switch-container{display:flex;justify-content:space-between;align-items:center;margin-top:10px;}
+.toggle-label{font-weight:400;margin-right:15px;margin-bottom: 0;}
+.switch{position:relative;display:inline-block;width:40px;height:24px;}
+.switch input{opacity:0;width:0;height:0;}
+.slider{position:absolute;cursor:pointer;top:0;left:0;right:0;bottom:0;background-color:var(--muted);transition:.4s;}
+.slider:before{position:absolute;content:"";height:16px;width:16px;left:4px;bottom:4px;background-color:white;transition:.4s;}
+input:checked + .slider{background-color:var(--success);}
+input:checked + .slider:before{-webkit-transform:translateX(16px);-ms-transform:translateX(16px);transform:translateX(16px);}
+.slider.round{border-radius:24px;}
+.slider.round:before{border-radius:50%;}
+
+/* Notifications (XP Flyout) */
+.notif-container{position:fixed;top:20px;right:20px;z-index:2000;display:flex;flex-direction:column-reverse;pointer-events:none;}
+.xp-flyout{
+    background:var(--success); color:#fff; padding:15px 20px; border-radius:var(--radius); 
+    margin-top:10px; box-shadow:0 4px 12px rgba(0,0,0,0.3); opacity:0; 
+    transform:translateX(100%); 
+    transition:all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94); 
+    min-width: 250px; display: flex; align-items: center; pointer-events: auto;
+    border: 1px solid rgba(255,255,255,0.1);
+}
+.xp-flyout.active{opacity:1; transform:translateX(0);}
+
+.xp-flyout.level-up{
+    background:linear-gradient(90deg, var(--accent2), var(--accent1));
+}
+.xp-flyout.achievement{
+    background:linear-gradient(135deg, var(--gold1), var(--gold2));
+    color:var(--bg1); font-weight:700; border: 2px solid var(--gold1);
+}
+
+.xp-flyout .icon{font-size: 1.8em; margin-right: 15px; flex-shrink: 0;}
+.xp-flyout .content{flex-grow: 1;}
+.xp-flyout .title{font-weight: 800; margin-bottom: 2px;}
+.xp-flyout .message{font-size: 0.9em; font-weight: 500;}
+
+
+/* Confetti/Particle CSS */
+.confetti-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 5000;
+    overflow: hidden;
+}
+.confetti {
+    position: absolute;
+    width: 8px;
+    height: 16px;
+    opacity: 0;
+    animation: confetti-fall 3s ease-in-out forwards;
+    transform-origin: bottom center;
+}
+
+@keyframes confetti-fall {
+    0% { transform: translate(var(--x-start), var(--y-start)) rotate(0deg); opacity: 1;
+    }
+    100% { transform: translate(var(--x-end), calc(100vh + 50px)) rotate(720deg); opacity: 0;
+    }
+}
+

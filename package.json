@@ -1,0 +1,72 @@
+{
+  "name": "jap-dex",
+  "version": "4.7.0",
+  "description": "Jap-Dex - aplicativo de estudo de japonés (vocabulário, kanji, alfabetos, SRS e quizzes)",
+  "main": "electron/main.js",
+  "author": "Modnar22",
+  "license": "MIT",
+  "scripts": {
+    "start": "electron .",
+    "dist": "electron-builder --win",
+    "dist:nsis": "electron-builder --win nsis",
+    "dist:portable": "electron-builder --win portable"
+  },
+  "devDependencies": {
+    "electron": "^33.4.11",
+    "electron-builder": "^25.1.8"
+  },
+  "build": {
+    "appId": "com.modnar22.japdex",
+    "productName": "Jap-Dex",
+    "artifactName": "Jap-Dex-${version}-${os}.${ext}",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "index.html",
+      "css/**/*",
+      "js/**/*",
+      "assets/**/*",
+      "electron/**/*",
+      "package.json"
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        },
+        {
+          "target": "portable",
+          "arch": [
+            "x64"
+          ]
+        }
+      ]
+    },
+    "portable": {
+      "artifactName": "Jap-Dex-${version}-portatil.${ext}"
+    },
+    "nsis": {
+      "artifactName": "Jap-Dex-${version}-instalador.${ext}",
+      "script": "installer-custom.nsi",
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "Jap-Dex",
+      "license": null
+    }
+  },
+  "allowScripts": {
+    "electron@33.4.11": true
+  },
+  "dependencies": {
+    "@capacitor/android": "^8.6.2",
+    "@capacitor/cli": "^8.6.2",
+    "@capacitor/core": "^8.6.2"
+  }
+}
