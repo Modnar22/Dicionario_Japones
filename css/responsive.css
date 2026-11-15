@@ -1,10 +1,9 @@
 /* responsive.css - Ajustes mobile (extraido de 3.8.7.html linhas 208-251) */
 /* Responsive adjustments */
 @media (max-width: 768px) {
-  .sidebar{position:static;width:100%;height:auto;padding:10px 20px;}
-  .sidebar-links{display:flex;flex-wrap:wrap;justify-content:space-around;gap:5px;}
-  .sidebar-links a{flex-grow:1;text-align:center;padding:8px 5px;margin-bottom:0;}
-  .main-content{margin-left:0;padding:10px;}
+  /* Sidebar é drawer em TODOS os tamanhos (ver layout.css); só ajusta largura/padding */
+  .main-content{margin-left:0;padding:74px 10px 10px;}
+  .sidebar{padding-top:70px;}
   .word-item{flex-direction:column;align-items:flex-start;}
   .word-item .word-meta{margin-top:10px;}
   .word-actions{margin-top:10px;width:100%;text-align:right;}

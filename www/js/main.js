@@ -5,7 +5,7 @@
 import { state, saveState } from './state.js';
 import { updateUI } from './ui/stats.js';
 import { checkAllAchievements } from './achievementLogic.js';
-import { switchTab, clearForm, speak } from './ui/tabs.js';
+import { switchTab, clearForm, speak, toggleMenu, setAlphabetView } from './ui/tabs.js';
 import { renderList } from './ui/wordList.js';
 import { renderAlphabets } from './ui/alphabetGrid.js';
 import {
@@ -53,6 +53,15 @@ export function init() {
     }
 
     checkAllAchievements();
+
+    // ===== Menu lateral (drawer) =====
+    document.getElementById('menu-toggle')
+      ?.addEventListener('click', () => toggleMenu());
+    document.getElementById('menu-backdrop')
+      ?.addEventListener('click', () => toggleMenu(false));
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') toggleMenu(false);
+    });
   } catch (e) {
     console.error('Erro fatal durante a inicialização.', e);
   }
@@ -65,6 +74,8 @@ Object.assign(window, {
   switchTab,
   clearForm,
   speak,
+  toggleMenu,
+  setAlphabetView,
   renderList,
   renderAlphabets,
   addWord,

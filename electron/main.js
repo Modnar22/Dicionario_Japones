@@ -1,6 +1,11 @@
 /* ===== Jap-Dex — processo principal do Electron ===== */
 const { app, BrowserWindow } = require('electron');
 const path = require('path');
+const fs = require('fs');
+
+// Ícone da janela (build/icon.ico) — só existe após gerar os assets
+const windowIcon = path.join(__dirname, '..', 'build', 'icon.ico');
+const iconPath = fs.existsSync(windowIcon) ? windowIcon : undefined;
 
 function createWindow() {
   const win = new BrowserWindow({
@@ -10,6 +15,7 @@ function createWindow() {
     minHeight: 620,
     backgroundColor: '#041025',
     title: 'Jap-Dex',
+    ...(iconPath ? { icon: iconPath } : {}),
     autoHideMenuBar: true,
     show: false,
     webPreferences: {

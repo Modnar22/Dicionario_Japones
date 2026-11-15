@@ -11,7 +11,26 @@
 .xp-label{font-size:12px;color:var(--muted);margin-top:5px;}
 
 /* Main Content */
-.main-content{margin-left:var(--sidebarW);padding:20px;min-height:100vh;}
+.main-content{margin-left:0;padding:74px 20px 20px;min-height:100vh;} /* padding-top reserva espaço para o botão ☰ fixo */
 .tab-content{display:none;}
 .tab-content.active{display:block;}
+
+/* ===== Menu lateral recolhível (botão ☰) =====
+   O sidebar vira um drawer: fica fora da tela até o clique no botão. */
+.menu-toggle{position:fixed;top:14px;left:14px;width:46px;height:46px;border:none;border-radius:12px;
+  background:var(--panel);color:var(--accent1);font-size:20px;cursor:pointer;z-index:110;
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:0 4px 12px rgba(0,0,0,0.4);transition:background-color 0.2s,color 0.2s;}
+.menu-toggle:hover{background:var(--card);color:var(--accent2);}
+body.menu-open .menu-toggle{background:var(--card);color:var(--accent2);}
+
+.menu-backdrop{position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:90;
+  opacity:0;visibility:hidden;transition:opacity 0.25s,visibility 0.25s;}
+body.menu-open .menu-backdrop{opacity:1;visibility:visible;}
+
+/* Drawer: desliza da esquerda por cima do conteúdo */
+.sidebar{transform:translateX(-105%);transition:transform 0.25s ease;
+  padding-top:70px; /* espaço para o botão ☰/✕ quando aberto */
+  width:min(84vw,var(--sidebarW));z-index:100;}
+body.menu-open .sidebar{transform:translateX(0);}
 

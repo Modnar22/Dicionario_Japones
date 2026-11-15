@@ -3,7 +3,14 @@
 <head>
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <!-- Sem Referer: o TTS online (Google) recusa requisições com referente -->
+  <meta name="referrer" content="no-referrer"/>
   <title>Jap-Dex — v4.7 (Busca Kanji, SRS L0, Pronúncia Corrigida)</title>
+
+  <!-- Ícone do projeto -->
+  <link rel="icon" href="favicon.ico" sizes="any"/>
+  <link rel="icon" type="image/png" href="assets/icon.png"/>
+  <link rel="apple-touch-icon" href="assets/icon.png"/>
 
   <!-- Font Awesome local (100% offline) -->
   <link rel="stylesheet" href="assets/icons/fa/css/all.min.css"/>
@@ -17,7 +24,13 @@
 <body>
 
 
-<div class="sidebar">
+<!-- Botão lateral: abre/fecha o menu com as abas -->
+<button id="menu-toggle" class="menu-toggle" aria-label="Abrir menu" aria-expanded="false" aria-controls="sidebar">
+  <i class="fas fa-bars"></i>
+</button>
+<div id="menu-backdrop" class="menu-backdrop"></div>
+
+<div class="sidebar" id="sidebar">
   <h1>Jap-Dex <span style="font-size: 12px; opacity: 0.6;">v4.7</span></h1>
     <div class="level-info">
     <div id="level-display">Level 1</div>
@@ -89,33 +102,43 @@
 
   <div id="alphabets" class="tab-content">
     <div class="card">
-      <h2>Hiragana</h2>
-      <div id="hiragana-grid" class="alphabet-grid"></div>
-      <button class="btn btn-success" onclick="openQuizModal('hiragana')"><i class="fas fa-h-square"></i> Iniciar Quiz de Hiragana</button>
-    </div>
-    
-    <div class="card">
-      <h2>Katakana</h2>
-      <div id="katakana-grid" class="alphabet-grid"></div>
-      <button class="btn btn-success" onclick="openQuizModal('katakana')"><i class="fas fa-k-square"></i> Iniciar Quiz de Katakana</button>
-    </div>
-
-    <div class="card">
-      <h2>Kanji Pessoais (<span id="kanji-count">0</span>)</h2>
-      <form id="add-kanji-form">
-        <div class="form-group"><label for="kanji-char">Kanji:</label><input type="text" id="kanji-char" maxlength="1" required></div>
-        <div class="form-group"><label for="kanji-meaning">Significado(s):</label><input type="text" id="kanji-meaning" required></div>
-        <div class="form-group"><label for="kanji-reading-on">Leitura On'yomi:</label><input type="text" id="kanji-reading-on"></div>
-        <div class="form-group"><label for="kanji-reading-kun">Leitura Kun'yomi:</label><input type="text" id="kanji-reading-kun"></div>
-        <button type="submit" class="btn btn-primary">Adicionar Kanji</button>
-        <button type="button" class="btn btn-secondary" onclick="clearForm('add-kanji-form')">Limpar</button>
-      </form>
-      <div class="form-group" style="margin-top: 20px;">
-        <label class="sr-only" for="kanji-search-input">Buscar kanji ou significado</label>
-        <input type="text" id="kanji-search-input" placeholder="Buscar Kanji ou Significado..." onkeyup="renderAlphabets()">
+      <!-- Seletor: mostra apenas o alfabeto escolhido -->
+      <div class="alphabet-selector" role="tablist" aria-label="Selecionar alfabeto">
+        <button type="button" class="alpha-tab active" data-view="hiragana" role="tab" aria-selected="true" onclick="setAlphabetView('hiragana')"><span class="alpha-glyph">あ</span> Hiragana</button>
+        <button type="button" class="alpha-tab" data-view="katakana" role="tab" aria-selected="false" onclick="setAlphabetView('katakana')"><span class="alpha-glyph">ア</span> Katakana</button>
+        <button type="button" class="alpha-tab" data-view="kanji" role="tab" aria-selected="false" onclick="setAlphabetView('kanji')"><span class="alpha-glyph">漢</span> Kanji</button>
       </div>
-      <div id="kanji-grid" class="kanji-grid" style="margin-top: 20px;"></div>
-      <button class="btn btn-success" onclick="openQuizModal('kanji')"><i class="fas fa-sign"></i> Iniciar Quiz de Kanji</button>
+      <p class="alpha-hint"><i class="fas fa-volume-up"></i> Clique em qualquer letra para ouvir a pronúncia em japonês.</p>
+
+      <div id="alpha-view-hiragana" class="alpha-view" role="tabpanel">
+        <h2>Hiragana</h2>
+        <div id="hiragana-grid" class="alphabet-grid"></div>
+        <button class="btn btn-success" onclick="openQuizModal('hiragana')"><i class="fas fa-h-square"></i> Iniciar Quiz de Hiragana</button>
+      </div>
+
+      <div id="alpha-view-katakana" class="alpha-view" role="tabpanel" hidden>
+        <h2>Katakana</h2>
+        <div id="katakana-grid" class="alphabet-grid"></div>
+        <button class="btn btn-success" onclick="openQuizModal('katakana')"><i class="fas fa-k-square"></i> Iniciar Quiz de Katakana</button>
+      </div>
+
+      <div id="alpha-view-kanji" class="alpha-view" role="tabpanel" hidden>
+        <h2>Kanji Pessoais (<span id="kanji-count">0</span>)</h2>
+        <form id="add-kanji-form">
+          <div class="form-group"><label for="kanji-char">Kanji:</label><input type="text" id="kanji-char" maxlength="1" required></div>
+          <div class="form-group"><label for="kanji-meaning">Significado(s):</label><input type="text" id="kanji-meaning" required></div>
+          <div class="form-group"><label for="kanji-reading-on">Leitura On'yomi:</label><input type="text" id="kanji-reading-on"></div>
+          <div class="form-group"><label for="kanji-reading-kun">Leitura Kun'yomi:</label><input type="text" id="kanji-reading-kun"></div>
+          <button type="submit" class="btn btn-primary">Adicionar Kanji</button>
+          <button type="button" class="btn btn-secondary" onclick="clearForm('add-kanji-form')">Limpar</button>
+        </form>
+        <div class="form-group" style="margin-top: 20px;">
+          <label class="sr-only" for="kanji-search-input">Buscar kanji ou significado</label>
+          <input type="text" id="kanji-search-input" placeholder="Buscar Kanji ou Significado..." onkeyup="renderAlphabets()">
+        </div>
+        <div id="kanji-grid" class="kanji-grid" style="margin-top: 20px;"></div>
+        <button class="btn btn-success" onclick="openQuizModal('kanji')"><i class="fas fa-sign"></i> Iniciar Quiz de Kanji</button>
+      </div>
     </div>
   </div>
 
