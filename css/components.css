@@ -14,6 +14,16 @@
 .btn:hover{opacity:0.8;}
 .btn + .btn{margin-left:10px;}
 
+/* Formulário: campos opcionais recolhidos atrás de "Mais opções" */
+.btn-more{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;
+  background:var(--panel);color:var(--accent1);border:1px dashed rgba(95,176,255,0.45);}
+.btn-more:hover{background:var(--card);color:var(--accent2);opacity:1;}
+.btn-more .word-more-chevron{font-size:0.8em;transition:transform 0.2s;}
+.btn-more.open .word-more-chevron{transform:rotate(180deg);}
+.extra-fields{margin-top:14px;padding-top:6px;border-top:1px solid rgba(255,255,255,0.08);}
+.extra-fields[hidden]{display:none !important;}
+.form-actions{margin-top:16px;}
+
 /* Dictionary List */
 .word-list{list-style:none;padding:0;}
 .word-item{background:var(--panel);border-radius:var(--radius);margin-bottom:10px;padding:15px;display:flex;justify-content:space-between;align-items:center;border-left:5px solid var(--accent1); position: relative; /* <-- CORREÇÃO ADICIONADA AQUI */}

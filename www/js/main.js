@@ -5,7 +5,7 @@
 import { state, saveState } from './state.js';
 import { updateUI } from './ui/stats.js';
 import { checkAllAchievements } from './achievementLogic.js';
-import { switchTab, clearForm, speak, toggleMenu, setAlphabetView } from './ui/tabs.js';
+import { switchTab, clearForm, speak, toggleMenu, setAlphabetView, toggleWordExtra } from './ui/tabs.js';
 import { renderList } from './ui/wordList.js';
 import { renderAlphabets } from './ui/alphabetGrid.js';
 import {
@@ -76,6 +76,7 @@ Object.assign(window, {
   speak,
   toggleMenu,
   setAlphabetView,
+  toggleWordExtra,
   renderList,
   renderAlphabets,
   addWord,

@@ -7,7 +7,18 @@
   font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial;
 }
 *{box-sizing:border-box}
-html,body{height:100%;margin:0;padding:0;background:linear-gradient(180deg,var(--bg1),var(--bg2));background-attachment:fixed;color:#eaf4ff;-webkit-font-smoothing:antialiased;overflow-x:hidden;}
+/* ÚNICO contexto de rolagem: a viewport (html).
+   Antes: `html,body{height:100%;overflow-x:hidden}` criava DOIS scrollbars —
+   o body virava scroll container (recortava o conteúdo na borda da janela =
+   informações cortadas) e a viewport rolava um espaço fantasma vazio no fim
+   (espaço gigante mal aproveitado). Agora só o html rola; o body apenas
+   ocupa no mínimo a altura da janela. */
+html{height:100%;overflow-x:hidden;}
+body{min-height:100%;margin:0;padding:0;background:linear-gradient(180deg,var(--bg1),var(--bg2));background-attachment:fixed;color:#eaf4ff;-webkit-font-smoothing:antialiased;}
+/* Rolagem silenciosa: barra invisível em qualquer área rolável
+   (wheel/teclado/toque continuam funcionando — estilo app) */
+*{scrollbar-width:none;-ms-overflow-style:none;}
+*::-webkit-scrollbar{width:0;height:0;display:none;}
 a{color:inherit;text-decoration:none}
 
 /* Rótulos acessíveis sem impacto visual (Fase 3 - acessibilidade) */

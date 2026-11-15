@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1"/>
   <!-- Sem Referer: o TTS online (Google) recusa requisições com referente -->
   <meta name="referrer" content="no-referrer"/>
-  <title>Jap-Dex — v4.8 (Menu Lateral, Voz Japonesa, Ícone do Projeto)</title>
+  <title>Jap-Dex — v4.8.1 (Correções de Layout e Rolagem)</title>
 
   <!-- Ícone do projeto -->
   <link rel="icon" href="favicon.ico" sizes="any"/>
@@ -31,7 +31,7 @@
 <div id="menu-backdrop" class="menu-backdrop"></div>
 
 <div class="sidebar" id="sidebar">
-  <h1>Jap-Dex <span style="font-size: 12px; opacity: 0.6;">v4.8</span></h1>
+  <h1>Jap-Dex <span style="font-size: 12px; opacity: 0.6;">v4.8.1</span></h1>
     <div class="level-info">
     <div id="level-display">Level 1</div>
     <div class="level-bar"><div id="xp-progress" class="level-progress" style="width: 0%;"></div></div>
@@ -54,18 +54,28 @@
         <div class="form-group"><label for="word-text">Palavra (Kanji/Kana):</label><input type="text" id="word-text" required></div>
         <div class="form-group"><label for="word-reading">Leitura (Furigana/Kana):</label><input type="text" id="word-reading" required></div>
         <div class="form-group"><label for="word-translation">Tradução (Português):</label><input type="text" id="word-translation" required></div>
-        <div class="form-group">
-          <label for="word-jlpt">Nível JLPT (XP Bônus):</label>
-          <select id="word-jlpt">
-            <option value="N5">N5 (Fácil)</option><option value="N4">N4</option><option value="N3">N3</option>
-            <option value="N2">N2</option><option value="N1">N1 (Difícil)</option><option value="None" selected>Nenhum</option>
-          </select>
+
+        <!-- Campos opcionais recolhidos: só aparecem com "Mais opções" -->
+        <button type="button" class="btn btn-more" id="word-more-btn" aria-expanded="false" aria-controls="word-extra-fields" onclick="toggleWordExtra()">
+          <i class="fas fa-sliders-h"></i> Mais opções <i class="fas fa-chevron-down word-more-chevron"></i>
+        </button>
+        <div id="word-extra-fields" class="extra-fields" hidden>
+          <div class="form-group">
+            <label for="word-jlpt">Nível JLPT (XP Bônus):</label>
+            <select id="word-jlpt">
+              <option value="N5">N5 (Fácil)</option><option value="N4">N4</option><option value="N3">N3</option>
+              <option value="N2">N2</option><option value="N1">N1 (Difícil)</option><option value="None" selected>Nenhum</option>
+            </select>
+          </div>
+          <div class="form-group"><label for="word-category">Categoria (ex: Verbo, Substantivo, Animais...):</label><input type="text" id="word-category"></div>
+          <div class="form-group"><label for="word-tags">Tags (separadas por vírgula):</label><input type="text" id="word-tags"></div>
+          <div class="form-group"><label for="word-notes">Notas:</label><textarea id="word-notes"></textarea></div>
         </div>
-        <div class="form-group"><label for="word-category">Categoria (ex: Verbo, Substantivo, Animais...):</label><input type="text" id="word-category"></div>
-        <div class="form-group"><label for="word-tags">Tags (separadas por vírgula):</label><input type="text" id="word-tags"></div>
-        <div class="form-group"><label for="word-notes">Notas:</label><textarea id="word-notes"></textarea></div>
-        <button type="submit" class="btn btn-primary">Adicionar Palavra</button>
-        <button type="button" class="btn btn-secondary" onclick="clearForm('add-word-form')">Limpar</button>
+
+        <div class="form-actions">
+          <button type="submit" class="btn btn-primary">Adicionar Palavra</button>
+          <button type="button" class="btn btn-secondary" onclick="clearForm('add-word-form')">Limpar</button>
+        </div>
       </form>
     </div>
 

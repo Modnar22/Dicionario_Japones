@@ -1,4 +1,4 @@
-# 📱 Jap-Dex — v4.8
+# 📱 Jap-Dex — v4.8.1
 
 Aplicativo de estudo de japonês: **vocabulário, kanji, alfabetos (hiragana/katakana),
 SRS (revisão espaçada), quizzes, XP/níveis e 50 conquistas** — 100% offline.
@@ -17,6 +17,17 @@ HTML + CSS + JS (ES modules), com correção de bugs e sanitização de HTML.
   por vez (um por clique), em vez de tudo empilhado.
 - **Ícone do projeto:** `favicon.ico` + `assets/icon.png` (degradê navy, hinomaru,
   glifo あ) → janela do Electron, ícones Android (`@capacitor/assets`) e PWA.
+
+### Correções v4.8.1
+
+- **Espaço gigante no fim da página / conteúdo cortado ao rolar:** `html,body`
+  tinham `height:100%` + `overflow-x:hidden`, criando **dois** contextos de
+  rolagem (o body recortava o conteúdo na borda da janela e a viewport rolava
+  um espaço fantasma vazio). Agora só a viewport rola (`html`), sem corte.
+- **Barra de rolagem invisível:** `scrollbar-width:none` + `::-webkit-scrollbar`
+  oculto — rolagem silenciosa estilo app (wheel/teclado/toque OK).
+- **Formulário "Adicionar Nova Palavra" enxuto:** só Palavra, Leitura e Tradução
+  ficam visíveis; JLPT, Categoria, Tags e Notas aparecem com **"Mais opções"**.
 
 ## Estrutura
 
@@ -71,8 +82,8 @@ npm.cmd run dist         # gera instalador NSIS + portátil em dist/
 ```
 
 Saída em `dist/`:
-- `Jap-Dex-4.8.0-instalador.exe` — instalador NSIS (escolhe diretório, atalhos)
-- `Jap-Dex-4.8.0-portatil.exe` — executável portátil
+- `Jap-Dex-4.8.1-instalador.exe` — instalador NSIS (escolhe diretório, atalhos)
+- `Jap-Dex-4.8.1-portatil.exe` — executável portátil
 
 > **Windows:** usar `npm.cmd` (o `npm.ps1` é bloqueado pela ExecutionPolicy).
 

@@ -60,6 +60,19 @@ export function clearForm(formId) {
   document.getElementById(formId).reset();
 }
 
+/* ===== Formulário "Mais opções" =====
+   Revela/esconde os campos opcionais (JLPT, Categoria, Tags, Notas)
+   do formulário "Adicionar Nova Palavra". */
+export function toggleWordExtra() {
+  const box = document.getElementById('word-extra-fields');
+  const btn = document.getElementById('word-more-btn');
+  if (!box || !btn) return;
+  const open = box.hidden; // estava oculto → vai abrir
+  box.hidden = !open;
+  btn.setAttribute('aria-expanded', String(open));
+  btn.classList.toggle('open', open);
+}
+
 /* ===== Pronúncia (Web Speech API + áudio local) =====
    Problema anterior: `getVoices()` retorna [] na 1ª chamada (carregamento
    assíncrono) e, sem voz japonesa instalada no SO, o utterance não soa.
