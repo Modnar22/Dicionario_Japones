@@ -11,3 +11,7 @@ android/local.properties
 android/capacitor.settings.json
 *.apk
 *.aab
+
+# Assinatura de release — NUNCA commitar keystore/senhas
+android/keystore/
+android/keystore.properties
