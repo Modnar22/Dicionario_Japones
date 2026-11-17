@@ -37,7 +37,7 @@ const STEPS = [
         tab: 'shop',
         target: '#shop',
         title: 'Loja de pacotes',
-        text: 'Gaste o XP que você ganha estudando para comprar pacotes de 5 palavras temáticas (Animais, Comida, Cores...). As palavras são secretas — compre para descobrir! Ao comprar, um novo nível do mesmo tema aparece com palavras diferentes e custo maior.',
+        text: 'Gaste o XP que você ganha estudando para comprar pacotes de 5 palavras temáticas (Animais, Comida, Cores...). As palavras são secretas, mas as que você já tem no dicionário aparecem reveladas e dão desconto — 5/5 = grátis! Ao comprar, um novo nível do mesmo tema aparece com palavras diferentes e custo maior.',
     },
 ];
 

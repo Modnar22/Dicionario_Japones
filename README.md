@@ -1,10 +1,17 @@
-# 📱 Jap-Dex — v4.9.0
+# 📱 Jap-Dex — v4.9.1
 
 Aplicativo de estudo de japonês: **vocabulário, kanji, alfabetos (hiragana/katakana),
 SRS (revisão espaçada), quizzes, XP/níveis e 50 conquistas** — 100% offline.
 
 Original: arquivo único `3.8.7.html` (2345 linhas) → reestruturado em módulos
 HTML + CSS + JS (ES modules), com correção de bugs e sanitização de HTML.
+
+### Novidades v4.9.1
+
+- **Desconto na Loja:** as palavras do pacote que você **já tem no dicionário**
+  aparecem **reveladas** (o restante continua secreto) e dão desconto
+  proporcional — pagar = custo × (faltantes/5). Ex.: 1 de 5 → −20%;
+  **5 de 5 → grátis** (o nível é resgatado sem custo e libera o próximo).
 
 ### Novidades v4.9.0
 
@@ -15,8 +22,10 @@ HTML + CSS + JS (ES modules), com correção de bugs e sanitização de HTML.
   volta à lista completa.
 - **Loja de pacotes:** 8 temas (Cores, Cumprimentos, Família, Escola, Casa,
   Animais, Comida, Ações) com **3 níveis cada**. O conteúdo é **secreto** (só
-  "5 palavras secretas" antes de comprar) e cada nível comprado libera o próximo
-  do mesmo tema com palavras diferentes e custo maior de XP.
+  "5 palavras secretas" antes de comprar), **exceto as palavras que você já tem
+  no dicionário** — essas aparecem reveladas e dão **desconto proporcional**
+  (pagar = custo × faltantes/5; 5/5 = **grátis**). Cada nível comprado libera
+  o próximo do mesmo tema com palavras diferentes e custo maior de XP.
 - **Tutorial em etapas:** tour guiado de 6 etapas com spotlight que inicia na
   1ª execução; botão **"?"** ao lado do ☰ reabre (Esc pula, setas navegam).
 
@@ -96,8 +105,8 @@ npm.cmd run dist         # gera instalador NSIS + portátil em dist/
 ```
 
 Saída em `dist/`:
-- `Jap-Dex-4.9.0-instalador.exe` — instalador NSIS (escolhe diretório, atalhos)
-- `Jap-Dex-4.9.0-portatil.exe` — executável portátil
+- `Jap-Dex-4.9.1-instalador.exe` — instalador NSIS (escolhe diretório, atalhos)
+- `Jap-Dex-4.9.1-portatil.exe` — executável portátil
 
 > **Windows:** usar `npm.cmd` (o `npm.ps1` é bloqueado pela ExecutionPolicy).
 

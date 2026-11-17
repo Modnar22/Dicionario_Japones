@@ -225,16 +225,33 @@ input:checked + .slider:before{-webkit-transform:translateX(16px);-ms-transform:
 .pack-secret{display:flex;flex-direction:column;align-items:center;gap:7px;
   background:var(--card);border:1px dashed rgba(255,255,255,0.2);
   border-radius:8px;padding:13px 8px;}
-.pack-secret-tiles{display:flex;gap:6px;}
+.pack-secret-tiles{display:flex;gap:6px;flex-wrap:wrap;justify-content:center;}
 .pack-secret-tiles span{width:30px;height:34px;display:flex;align-items:center;
   justify-content:center;background:var(--panel);border:1px solid rgba(255,255,255,0.1);
   border-radius:6px;color:var(--muted);font-weight:700;font-size:1.05em;
   filter:blur(0.2px);}
 .pack-secret small{color:var(--muted);font-size:0.78em;text-align:center;}
+/* Palavra que o usuário JÁ TEM → revelada (não é segredo pra ele) */
+.pack-secret-tiles .tile-revealed{width:auto;min-width:32px;height:34px;padding:0 8px;
+  font-size:0.95em;background:rgba(24,211,155,0.14);border-color:var(--success);
+  color:var(--success);filter:none;cursor:default;}
 .pack-tier{display:inline-block;background:var(--accent1);color:#04101f;
   font-size:0.68em;font-weight:800;padding:3px 9px;border-radius:999px;
   margin-left:6px;letter-spacing:0.5px;vertical-align:middle;}
 .pack-meta .jlpt-tag{margin-left:6px;}
+
+/* Desconto por palavras já cadastradas (v4.9.1) */
+.pack-price-old{color:var(--muted);text-decoration:line-through;
+  font-weight:500;margin-left:5px;font-size:0.92em;}
+.pack-discount{display:inline-block;background:rgba(24,211,155,0.15);
+  border:1px solid var(--success);color:var(--success);font-size:0.72em;
+  font-weight:800;padding:2px 8px;border-radius:999px;margin-left:4px;
+  vertical-align:middle;white-space:nowrap;}
+.pack-price.pack-free{color:var(--success);}
+.pack-free-hint{color:var(--success);font-weight:700;font-size:0.82em;margin-left:5px;}
+.pack-owned-hint{margin:0;font-size:0.8em;color:var(--success);font-weight:600;
+  line-height:1.45;}
+.pack-owned-hint .fa-check-circle{margin-right:4px;}
 
 /* Tema concluído (todos os níveis comprados) */
 .pack-card.pack-done{border-color:var(--success);align-items:center;text-align:center;}
