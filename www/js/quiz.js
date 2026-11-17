@@ -63,9 +63,17 @@ hint = 'Qual a palavra em Japonês (Kanji/Kana)?';
 HIRAGANA_CHARS_FULL : KATAKANA_CHARS_FULL;
         const romanji = type === 'hiragana' ? HIRAGANA_ROMANJI_FULL : KATAKANA_ROMANJI_FULL;
         const stats = state.alphaStats;
+        // "Focar em não dominadas": exclui caracteres já DOMINADOS (5+ acertos).
+        // Se tudo estiver dominado, usa a lista completa (quiz nunca fica vazio).
+        let indexes = chars.map((_, i) => i);
+        if (state.settings.focusNonMastered) {
+            const pending = indexes.filter(i => (stats[chars[i]]?.correct || 0) < ALPHA_GOLD_THRESHOLD);
+            if (pending.length > 0) indexes = pending;
+        }
 // Seleção ponderada (mais erros = mais chances, menos acertos = mais chances)
         let weightedChars = [];
-chars.forEach((char, index) => {
+indexes.forEach(index => {
+            const char = chars[index];
             const charStats = stats[char] || { correct: 0, wrong: 0 };
             // Peso: Inverso dos acertos (mínimo 1 para chars não vistos) + erros
             const weight = Math.max(1, ALPHA_GOLD_THRESHOLD - charStats.correct) + charStats.wrong * 2;
@@ -102,6 +110,11 @@ if (exampleKanjiList.length > 0) {
         }
         
         if (kanjiList.length === 0) return null;
+        // "Focar em não dominadas": exclui kanji já DOMINADOS (5+ acertos)
+        if (state.settings.focusNonMastered) {
+            const pending = kanjiList.filter(k => (stats[k.char]?.correct || 0) < ALPHA_GOLD_THRESHOLD);
+            if (pending.length > 0) { kanjiList.length = 0; kanjiList.push(...pending); }
+        }
 // Seleção ponderada (mais erros = mais chances)
         let weightedKanji = [];
 kanjiList.forEach(k => {
@@ -154,6 +167,13 @@ if (!question) {
         return;
     }
     currentQuiz.question = question; 
+    // Linha "Focar em não dominadas": só faz sentido em quizzes de itens
+    const focusRow = document.getElementById('quiz-focus-row');
+    if (focusRow) {
+        focusRow.hidden = (type === 'voc');
+        const focusCb = document.getElementById('quiz-focus-nonmastered');
+        if (focusCb) focusCb.checked = !!state.settings.focusNonMastered;
+    }
     document.getElementById('quiz-title').textContent = type === 'voc' ?
 'Quiz de Vocabulário' : type === 'hiragana' ?
     'Quiz de Hiragana' : type === 'katakana' ?
@@ -181,6 +201,12 @@ export function closeQuizModal() {
 }
     updateUI(); 
 } 
+
+/* Preferência "Focar em não dominadas" (persiste em settings). */
+export function setQuizFocus(checked) {
+    state.settings.focusNonMastered = !!checked;
+    saveState();
+}
 
 export function checkModalAnswer() { 
     const inputEl = document.getElementById('quiz-answer-input');

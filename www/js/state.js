@@ -24,10 +24,13 @@ export function defaultState() {
         kanji: [], 
         alphaStats: {}, 
         kanjiStats: {}, 
+        ownedPacks: [], // Loja: ids dos pacotes comprados
         achievements: JSON.parse(JSON.stringify(ACHIEVEMENTS)), 
         settings: { 
            
  sound: true, 
+            tutorialSeen: false,   // tutorial em etapas já foi concluído?
+            focusNonMastered: false, // quiz: focar em não dominadas?
         }, 
     };
 } 
@@ -82,8 +85,11 @@ loadedState.kanji = loadedState.kanji.map(k => ({
             ...k,
             id: k.id || Date.now() + Math.random(), // Garante ID
         }));
-// Garante o objeto settings
-        loadedState.settings = loadedState.settings || defaultState().settings;
+// Garante o objeto settings (mescla chaves novas em saves antigos)
+        loadedState.settings = { ...defaultState().settings, ...(loadedState.settings || {}) };
+
+        // Loja: garante a lista de pacotes comprados (saves antigos)
+        loadedState.ownedPacks = Array.isArray(loadedState.ownedPacks) ? loadedState.ownedPacks : [];
 
         return loadedState;
 } 

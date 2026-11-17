@@ -197,3 +197,81 @@ input:checked + .slider:before{-webkit-transform:translateX(16px);-ms-transform:
     }
 }
 
+/* ===== Loja de pacotes (v4.9) ===== */
+.shop-intro{color:var(--muted);line-height:1.55;}
+.shop-balance{display:inline-flex;align-items:center;gap:8px;background:var(--panel);
+  border:1px solid var(--gold2);color:var(--gold1);font-weight:700;
+  padding:8px 16px;border-radius:999px;margin:0 0 16px;}
+.shop-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:14px;}
+.pack-card{background:var(--panel);border:1px solid rgba(255,255,255,0.08);
+  border-radius:var(--radius);padding:16px;display:flex;flex-direction:column;gap:9px;
+  transition:border-color 0.2s,box-shadow 0.2s;}
+.pack-card:hover{border-color:var(--accent1);box-shadow:0 4px 16px rgba(0,0,0,0.3);}
+.pack-card.owned{border-color:var(--success);box-shadow:0 0 10px rgba(24,211,155,0.25);}
+.pack-head{display:flex;align-items:center;gap:10px;}
+.pack-head h3{margin:0;font-size:1.05em;color:var(--accent2);border:none;padding:0;}
+.pack-icon{font-size:1.7em;line-height:1;}
+.pack-meta{margin:0;font-size:0.85em;color:var(--muted);}
+.pack-price{color:var(--gold1);font-weight:700;}
+.pack-preview{list-style:none;margin:0;padding:8px 10px;background:var(--card);
+  border-radius:8px;font-size:0.85em;display:flex;flex-direction:column;gap:4px;}
+.pack-preview li{display:flex;justify-content:space-between;gap:8px;}
+.pack-preview em{color:var(--muted);font-style:normal;font-size:0.9em;}
+.pack-actions{margin-top:auto;}
+.pack-actions .btn{width:100%;}
+.pack-actions .btn:disabled{opacity:0.75;cursor:not-allowed;}
+
+/* Pacote SECRETO: conteúdo oculto até comprar (v4.9) */
+.pack-secret{display:flex;flex-direction:column;align-items:center;gap:7px;
+  background:var(--card);border:1px dashed rgba(255,255,255,0.2);
+  border-radius:8px;padding:13px 8px;}
+.pack-secret-tiles{display:flex;gap:6px;}
+.pack-secret-tiles span{width:30px;height:34px;display:flex;align-items:center;
+  justify-content:center;background:var(--panel);border:1px solid rgba(255,255,255,0.1);
+  border-radius:6px;color:var(--muted);font-weight:700;font-size:1.05em;
+  filter:blur(0.2px);}
+.pack-secret small{color:var(--muted);font-size:0.78em;text-align:center;}
+.pack-tier{display:inline-block;background:var(--accent1);color:#04101f;
+  font-size:0.68em;font-weight:800;padding:3px 9px;border-radius:999px;
+  margin-left:6px;letter-spacing:0.5px;vertical-align:middle;}
+.pack-meta .jlpt-tag{margin-left:6px;}
+
+/* Tema concluído (todos os níveis comprados) */
+.pack-card.pack-done{border-color:var(--success);align-items:center;text-align:center;}
+.pack-card.pack-done .pack-head{justify-content:center;}
+.pack-done-note{margin:0;font-size:0.85em;color:var(--muted);line-height:1.5;}
+
+/* Chip "Dominada" na lista de palavras (v4.9) */
+.mastery-tag{display:inline-block;background:rgba(255,214,107,0.15);
+  border:1px solid var(--gold1);color:var(--gold1);font-size:0.72em;font-weight:700;
+  padding:2px 8px;border-radius:999px;margin-left:6px;white-space:nowrap;vertical-align:middle;}
+
+/* Quiz: opção "Focar em não dominadas" (v4.9) */
+.quiz-focus-row{display:flex;align-items:flex-start;gap:9px;margin:12px 0;
+  font-size:0.9em;color:var(--muted);cursor:pointer;text-align:left;}
+.quiz-focus-row[hidden]{display:none !important;}
+.quiz-focus-row input{width:16px;height:16px;margin-top:2px;accent-color:var(--accent1);cursor:pointer;flex-shrink:0;}
+.quiz-focus-row small{display:block;opacity:0.8;font-size:0.9em;}
+
+/* Botão "?" do tutorial (ao lado do ☰) */
+.help-btn{position:fixed;top:14px;left:70px;width:46px;height:46px;border:none;
+  border-radius:12px;background:var(--panel);color:var(--accent2);font-size:19px;
+  cursor:pointer;z-index:110;display:flex;align-items:center;justify-content:center;
+  box-shadow:0 4px 12px rgba(0,0,0,0.4);transition:background-color 0.2s,color 0.2s;}
+.help-btn:hover{background:var(--card);color:var(--accent1);}
+body.menu-open .help-btn{display:none;} /* não cobre o drawer aberto */
+
+/* Tutorial em etapas: spotlight + balão (v4.9) */
+.tour-blocker{position:fixed;inset:0;z-index:3000;background:transparent;}
+.tour-ring{position:fixed;z-index:3001;pointer-events:none;border:3px solid var(--accent1);
+  border-radius:12px;box-shadow:0 0 0 9999px rgba(2,6,18,0.72),0 0 22px rgba(95,176,255,0.7);
+  transition:top 0.25s,left 0.25s,width 0.25s,height 0.25s;}
+.tour-bubble{position:fixed;z-index:3002;width:min(340px,calc(100vw - 24px));
+  background:var(--panel);border:1px solid var(--accent1);border-radius:var(--radius);
+  padding:16px;box-shadow:0 12px 34px rgba(0,0,0,0.55);}
+.tour-title{color:var(--accent2);font-weight:800;margin:0 0 6px;font-size:1.02em;}
+.tour-text{font-size:0.9em;line-height:1.55;color:#eaf4ff;margin:0;}
+.tour-progress{font-size:0.75em;color:var(--muted);margin-top:10px;}
+.tour-actions{display:flex;justify-content:space-between;gap:8px;margin-top:12px;align-items:center;}
+.tour-actions .btn{padding:8px 14px;font-size:0.88em;}
+

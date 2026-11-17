@@ -3,9 +3,9 @@
    v4_7. O antigo jp_app_v4_0 é migrado automaticamente em state.js.   */
 export const STORAGE_KEY = 'jp_app_v4_7';
 export const ALPHA_SILVER_THRESHOLD = 3; 
-export const ALPHA_GOLD_THRESHOLD = 5;   
+export const ALPHA_GOLD_THRESHOLD = 5;   // 5 acertos = DOMINADA (maestria)
 export const WORD_SILVER_THRESHOLD = 3; // Adicionado como constante global (Ponto 3)
-export const WORD_GOLD_THRESHOLD = 6; // Adicionado como constante global (Ponto 3)
+export const WORD_GOLD_THRESHOLD = 5; // v4.9: alinhado a 5 = DOMINADA (era 6)
 
 export const XP_BY_JLPT = { 'N5': 20, 'N4': 30, 'N3': 40, 'N2': 
 50, 'N1': 60, 'None': 10 };

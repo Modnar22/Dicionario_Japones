@@ -15,7 +15,7 @@ let proficiencyClass = '';
         proficiencyClass = 'char-silver';
 } 
     return ` 
-        <div class="char-container ${proficiencyClass}" data-char="${esc(char)}" onclick="speak('${escJS(char)}', 'ja-JP')"> 
+        <div class="char-container ${proficiencyClass}"${proficiencyClass === 'char-gold' ? ' title="Dominada (5+ acertos)"' : proficiencyClass === 'char-silver' ? ' title="Prata (3+ acertos)"' : ''} data-char="${esc(char)}" onclick="speak('${escJS(char)}', 'ja-JP')"> 
             <div class="char-main">${esc(char)}</div> 
             <div class="char-romaji">${esc(romaji)}</div> 
         </div> `; 
@@ -48,7 +48,7 @@ title="Excluir"><i class="fas fa-trash-alt"></i></button>
 }
 
     return `
-        <div class="kanji-card ${proficiencyClass}" data-kanji="${esc(char)}">
+        <div class="kanji-card ${proficiencyClass}"${proficiencyClass === 'char-gold' ? ' title="Dominada (5+ acertos)"' : proficiencyClass === 'char-silver' ? ' title="Prata (3+ acertos)"' : ''} data-kanji="${esc(char)}">
             <div class="kanji-char" onclick="speak('${escJS(char)}', 'ja-JP')" style="cursor: pointer; font-size: 2.5em; font-weight: 700; color: var(--accent2);">
                 ${esc(char)} 
                 <i class="fas fa-volume-up" style="font-size: 0.4em; margin-left: 5px; color: var(--accent1);"></i>

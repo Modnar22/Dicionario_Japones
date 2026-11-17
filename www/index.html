@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1"/>
   <!-- Sem Referer: o TTS online (Google) recusa requisições com referente -->
   <meta name="referrer" content="no-referrer"/>
-  <title>Jap-Dex — v4.8.1 (Correções de Layout e Rolagem)</title>
+  <title>Jap-Dex — v4.9.0 (Maestria, Loja e Tutorial)</title>
 
   <!-- Ícone do projeto -->
   <link rel="icon" href="favicon.ico" sizes="any"/>
@@ -28,10 +28,14 @@
 <button id="menu-toggle" class="menu-toggle" aria-label="Abrir menu" aria-expanded="false" aria-controls="sidebar">
   <i class="fas fa-bars"></i>
 </button>
+<!-- Tutorial: reabre o tour em etapas -->
+<button id="help-btn" class="help-btn" aria-label="Abrir tutorial" title="Tutorial">
+  <i class="fas fa-question"></i>
+</button>
 <div id="menu-backdrop" class="menu-backdrop"></div>
 
 <div class="sidebar" id="sidebar">
-  <h1>Jap-Dex <span style="font-size: 12px; opacity: 0.6;">v4.8.1</span></h1>
+  <h1>Jap-Dex <span style="font-size: 12px; opacity: 0.6;">v4.9.0</span></h1>
     <div class="level-info">
     <div id="level-display">Level 1</div>
     <div class="level-bar"><div id="xp-progress" class="level-progress" style="width: 0%;"></div></div>
@@ -40,6 +44,7 @@
 
   <div class="sidebar-links" id="sidebar-links">
     <a href="#" onclick="switchTab('dict', this);"><i class="fas fa-book"></i> Dicionário</a>
+    <a href="#" onclick="switchTab('shop', this);"><i class="fas fa-store"></i> Loja</a>
     <a href="#" onclick="switchTab('alphabets', this);"><i class="fas fa-sort-alpha-down"></i> Alfabetos</a>
     <a href="#" onclick="switchTab('achievements', this);"><i class="fas fa-trophy"></i> Conquistas</a>
     <a href="#" onclick="switchTab('stats', this);"><i class="fas fa-chart-bar"></i> Estatísticas</a>
@@ -107,6 +112,15 @@
 	  </div>
       <ul id="word-list" class="word-list">
         </ul>
+    </div>
+  </div>
+
+  <div id="shop" class="tab-content">
+    <div class="card">
+      <h2><i class="fas fa-store"></i> Loja de Pacotes</h2>
+      <p class="shop-intro">Estude e ganhe <strong>XP</strong> para trocar por pacotes de <strong>5 palavras novas</strong> com tema específico. O conteúdo é <strong>secreto</strong> — compre para descobrir! Ao concluir um tema, um novo nível aparece com palavras diferentes e custo maior.</p>
+      <div class="shop-balance"><i class="fas fa-star"></i> <span id="shop-xp">0</span> XP disponíveis</div>
+      <div id="shop-grid" class="shop-grid"></div>
     </div>
   </div>
 
@@ -210,6 +224,11 @@
     <div id="quiz-question-container">
       <div id="quiz-question-text">Pergunta</div>
       <div id="quiz-translation-hint">Dica (Tradução)</div>
+      <label class="quiz-focus-row" id="quiz-focus-row" hidden>
+        <input type="checkbox" id="quiz-focus-nonmastered" onchange="setQuizFocus(this.checked)">
+        <span>Focar em não dominadas
+          <small>só itens com menos de 5 acertos (não dominados)</small></span>
+      </label>
       <label class="sr-only" for="quiz-answer-input">Sua resposta</label>
       <input type="text" id="quiz-answer-input" placeholder="Sua resposta..." onkeydown="if(event.key==='Enter') document.getElementById('quiz-submit-btn').click();">
       <div id="quiz-feedback"></div>

@@ -78,8 +78,10 @@ export function processNotifQueue() {
         playProficiencySound(); // <- CORRIGIDO para usar novo som v3.7.3
 const isAlpha = notif.type_name === 'Hiragana' || notif.type_name === 'Katakana';
         const typeName = notif.type_name || 'Palavra';
-const title = `Proficiência ${notif.tier} 🎉`;
-        const message = `${typeName} "${notif.item}" alcançou o nível ${notif.tier}.`;
+const title = notif.tier === 'Ouro' ? 'DOMINADA! 🏆' : `Proficiência ${notif.tier} 🎉`;
+        const message = notif.tier === 'Ouro'
+            ? `${typeName} "${notif.item}" está DOMINADA! (5+ acertos = Ouro)`
+            : `${typeName} "${notif.item}" alcançou o nível ${notif.tier}.`;
 const icon = notif.tier === 'Ouro' ? '<i class="fas fa-medal" style="color:var(--gold1);"></i>' : '<i class="fas fa-certificate" style="color:#c0c0c0;"></i>';
         showFlyout('proficiency', title, message, icon);
 }

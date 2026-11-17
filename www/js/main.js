@@ -17,8 +17,10 @@ import {
   closeKanjiEditModal, saveEditedKanji,
 } from './crud/kanji.js';
 import {
-  openQuizModal, closeQuizModal, checkModalAnswer, modalNext,
+  openQuizModal, closeQuizModal, checkModalAnswer, modalNext, setQuizFocus,
 } from './quiz.js';
+import { buyPack, renderShop } from './ui/shop.js';
+import { startTutorial } from './ui/tutorial.js';
 import { exportJSON, importJSON, resetProgress } from './io/backup.js';
 
 export function init() {
@@ -62,6 +64,13 @@ export function init() {
     document.addEventListener('keydown', (e) => {
       if (e.key === 'Escape') toggleMenu(false);
     });
+
+    // ===== Tutorial em etapas (1ª execução + botão "?") =====
+    document.getElementById('help-btn')
+      ?.addEventListener('click', () => startTutorial());
+    if (!state.settings.tutorialSeen) {
+      setTimeout(() => startTutorial(), 700);
+    }
   } catch (e) {
     console.error('Erro fatal durante a inicialização.', e);
   }
@@ -79,6 +88,10 @@ Object.assign(window, {
   toggleWordExtra,
   renderList,
   renderAlphabets,
+  renderShop,
+  buyPack,
+  startTutorial,
+  setQuizFocus,
   addWord,
   deleteWord,
   toggleWordSeen,

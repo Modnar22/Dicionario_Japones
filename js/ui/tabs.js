@@ -1,6 +1,7 @@
 /* ===== Imports ===== */
 import { renderAchievements } from '../ui/achievementsView.js';
 import { renderAlphabets } from '../ui/alphabetGrid.js';
+import { renderShop } from '../ui/shop.js';
 import { renderList } from '../ui/wordList.js';
 
 /* ===== Menu lateral (botão ☰ fixo) =====
@@ -54,6 +55,7 @@ export function switchTab(tabId, element) {
   if (tabId === 'alphabets') renderAlphabets();
   if (tabId === 'achievements') renderAchievements();
   if (tabId === 'dict') renderList();
+  if (tabId === 'shop') renderShop();
 }
 
 export function clearForm(formId) {

@@ -10,6 +10,9 @@ export function makeWordItemHTML(word) {
     const jlptTag = word.jlpt !== 'None' ?
 `<span class="jlpt-tag">${esc(word.jlpt)}</span>` : '';
     const categoryTag = word.category ? `<span class="cat-tag">${esc(word.category)}</span>` : '';
+    /* Maestria: 5+ acertos = DOMINADA (chip visível; a borda já vem da classe) */
+    const masteryTag = word.stats.correct >= WORD_GOLD_THRESHOLD
+        ? `<span class="mastery-tag" title="Dominada (5+ acertos)">🏆 Dominada</span>` : '';
     /* BUG Nº7: srs_level pode vir corrompido de um backup importado —
        coercido para número antes de entrar em atributos/HTML.          */
     const srsLevel = Number(word.stats.srs_level) || 0;
@@ -58,6 +61,7 @@ return `
                 ${srsTag}
                     ${jlptTag}
                     ${categoryTag}
+                    ${masteryTag}
                     <span style="color:var(--muted); font-size:0.8em; margin-left:10px;">${reviewDateText}</span>
                     ${correctBadge}
  

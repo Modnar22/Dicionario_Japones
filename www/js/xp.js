@@ -1,7 +1,7 @@
 /* ===== Imports ===== */
 import { checkAchievements } from './achievementLogic.js';
 import { LEVELS } from './config.js';
-import { processNotifQueue } from './notifications.js';
+import { calculateLevel, processNotifQueue } from './notifications.js';
 import { notifQueue, saveState, state } from './state.js';
 import { updateUI } from './ui/stats.js';
 export function addXP(amount) {
@@ -30,4 +30,16 @@ checkAchievements(state.level, 'level');
     saveState();
     updateUI();
     processNotifQueue(); // Inicia (ou tenta iniciar) o processamento da fila
+}
+
+/* ===== Loja: gastar XP =====
+   Recalcula o nível a partir do XP restante (pode diminuir — o XP é a
+   moeda da loja). Devolve false se não houver XP suficiente.          */
+export function spendXP(amount) {
+    if (!amount || amount <= 0 || state.xp < amount) return false;
+    state.xp -= amount;
+    state.level = calculateLevel(state.xp);
+    saveState();
+    updateUI();
+    return true;
 }
