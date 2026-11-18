@@ -4,6 +4,7 @@
    pode ser reaberto pelo botão "?" ao lado do ☰.                    */
 import { showFlyout } from '../notifications.js';
 import { saveState, state } from '../state.js';
+import { unlockAchievement } from '../achievementLogic.js';
 import { switchTab, toggleMenu } from './tabs.js';
 
 const STEPS = [
@@ -157,6 +158,7 @@ function endTutorial(completed) {
     state.settings.tutorialSeen = true;
     saveState();
     if (completed) {
+        unlockAchievement('tutorial_done'); // conquista "Guia do Aprendiz" (v4.10)
         showFlyout('correct', 'Tutorial concluído! 🎓',
             'Clique em "?" ao lado do menu para rever quando quiser.',
             '<i class="fas fa-graduation-cap"></i>');

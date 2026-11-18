@@ -49,8 +49,9 @@ export const ACHIEVEMENTS = [
     { id: 'kata_30_gold', name: 'Katakana Ouro', desc: 'Obtenha proficiência Ouro em 30 caracteres Katakana.', type: 'kata_gold', value: 30, current: 0, unlocked: false, icon: 'fas fa-star-half-alt' },
 
     /* === NOVAS CONQUISTAS DE PROFICIÊNCIA === */
-    // Proficiência de Palavras (Type: word_gold) - 4
+    // Proficiência de Palavras (Type: word_gold) - 5
     { id: 'word_gold_10', name: 'Aprendiz Brilhante', desc: 'Obtenha Proficiência Ouro em 10 Palavras.', type: 'word_gold', value: 10, current: 0, unlocked: false, icon: 'fas fa-gem' },
+    { id: 'word_gold_25', name: 'Memória de Aço', desc: 'Obtenha Proficiência Ouro (Dominada) em 25 Palavras.', type: 'word_gold', value: 25, current: 0, unlocked: false, icon: 'fas fa-crown' },
     { id: 'word_gold_50', name: 'Vocabulário Consolidado', desc: 'Obtenha Proficiência Ouro em 50 Palavras.', type: 'word_gold', value: 50, current: 0, unlocked: false, icon: 'fas fa-star-of-life' },
     { id: 'word_gold_100', name: 'Mestre da Memorização', desc: 'Obtenha Proficiência Ouro em 100 Palavras.', type: 'word_gold', value: 100, current: 0, unlocked: false, icon: 'fas fa-lightbulb' },
     { id: 'word_gold_250', name: 'Enciclopédia Pessoal', desc: 'Obtenha Proficiência Ouro em 250 Palavras.', type: 'word_gold', value: 250, current: 0, unlocked: false, icon: 'fas fa-book-reader' },
@@ -81,6 +82,10 @@ export const ACHIEVEMENTS = [
     { id: 'cat_place_5', name: 'Turista Lexical', desc: 'Adicione 5 palavras com a categoria "Lugares".', type: 'cat_word_count', value: 5, current: 0, unlocked: false, category_key: 'Lugares', icon: 'fas fa-map-marked-alt' },
     { id: 'cat_place_10', name: 'Geógrafo Amador', desc: 'Adicione 10 palavras com a categoria "Lugares".', type: 'cat_word_count', value: 10, current: 0, unlocked: false, category_key: 'Lugares', icon: 'fas fa-globe' },
 
-    /* Total: 5 + 7 + 5 + 5 + 2 + 5 + 4 + 3 + 2 + 2 + 2 + 2 + 2 = 50 Conquistas */
+    /* === NOVAS CONQUISTAS (v4.10) === */
+    { id: 'shop_10', name: 'Colecionador de Temas', desc: 'Compre 10 pacotes de palavras na Loja.', type: 'shop', value: 10, current: 0, unlocked: false, icon: 'fas fa-shopping-bag' },
+    { id: 'tutorial_done', name: 'Guia do Aprendiz', desc: 'Conclua o tutorial guiado do Jap-Dex.', type: 'tutorial', value: 1, current: 0, unlocked: false, icon: 'fas fa-map-signs' },
+
+    /* Total: 5 + 7 + 5 + 5 + 2 + 5 + 5 + 3 + 2 + 2 + 2 + 2 + 2 + 2 = 53 Conquistas */
 ];
 // Fim de ACHIEVEMENTS 

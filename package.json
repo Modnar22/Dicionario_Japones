@@ -1,6 +1,6 @@
 {
   "name": "jap-dex",
-  "version": "4.9.1",
+  "version": "4.10.0",
   "description": "Jap-Dex - aplicativo de estudo de japonés (vocabulário, kanji, alfabetos, SRS e quizzes)",
   "main": "electron/main.js",
   "author": "Modnar22",
@@ -66,6 +66,7 @@
     "electron@33.4.11": true
   },
   "dependencies": {
+    "@capacitor-community/text-to-speech": "^8.0.2",
     "@capacitor/android": "^8.6.2",
     "@capacitor/cli": "^8.6.2",
     "@capacitor/core": "^8.6.2"

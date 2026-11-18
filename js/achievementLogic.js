@@ -125,6 +125,29 @@ export function checkAchievements(newValue, type) {
         });
     }
 
+    // Conquistas de Loja (type: shop) — nº de pacotes comprados (v4.10)
+    if (type === 'shop') {
+        const owned = Array.isArray(state.ownedPacks) ? state.ownedPacks.length : 0;
+        state.achievements.filter(a => a.type === 'shop' && !a.unlocked).forEach(ach => {
+            ach.current = owned;
+            if (owned >= ach.value) {
+                unlockAchievement(ach.id);
+                achievementUnlocked = true;
+            }
+        });
+    }
+
+    // Conquista de Tutorial (type: tutorial) — concluído de uma vez (v4.10)
+    if (type === 'tutorial') {
+        state.achievements.filter(a => a.type === 'tutorial' && !a.unlocked).forEach(ach => {
+            ach.current = newValue || 1;
+            if (ach.current >= ach.value) {
+                unlockAchievement(ach.id);
+                achievementUnlocked = true;
+            }
+        });
+    }
+
     // Checagem de Conquistas JLPT
     if (type === 'jlpt_add') { // Chamada em addWord se houver nível JLPT
         const jlptCounts = state.words.reduce((acc, w) => {
@@ -166,6 +189,11 @@ checkAchievements(uniqueCategories, 'category');
     // 5. Check Hiragana/Katakana Gold
     checkAchievements(null, 'hira_correct');
     checkAchievements(null, 'kata_correct');
+// 5b. Recalcula palavras/kanji dominados (v4.10 — ex.: word_gold_25)
+    checkAchievements(null, 'word_correct');
+    checkAchievements(null, 'kanji_correct');
+// 5c. Loja: pacotes comprados (v4.10 — ex.: shop_10)
+    checkAchievements(null, 'shop');
 // 6. Check JLPT Achievements (Recalcula total)
     const jlptWordCounts = state.words.reduce((acc, w) => {
         const jlpt = w.jlpt || 'None';

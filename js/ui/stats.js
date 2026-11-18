@@ -5,6 +5,8 @@ import { state } from '../state.js';
 import { renderAchievements } from '../ui/achievementsView.js';
 import { renderAlphabets } from '../ui/alphabetGrid.js';
 import { renderList } from '../ui/wordList.js';
+import { applyTheme } from '../theme.js';
+import { renderDaily } from '../daily.js';
 export function updateStats() { 
     const uniqueCategories = [...new Set(state.words.map(w => w.category ? w.category.trim() : '').filter(c => c))];
 const unlockedCount = state.achievements.filter(a => a.unlocked).length;
@@ -30,6 +32,7 @@ let progress = nextLevelData ? (xpGained / xpRequired) * 100 : 100;
     // Render Lists 
     renderList(); 
     renderAlphabets();
+    renderDaily(); // missões diárias (v4.10)
 // Update Stats 
     updateStats();
     
@@ -41,4 +44,6 @@ if (soundSettingEl) {
         soundSettingEl.checked = !state.settings.sound;
 // Invertido, checked = 'desativar sons'
     }
+    // Re-sincroniza tema (import/reset podem ter trocado settings)
+    applyTheme();
 } 

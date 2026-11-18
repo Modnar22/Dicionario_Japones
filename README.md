@@ -1,10 +1,31 @@
-# 📱 Jap-Dex — v4.9.1
+# 📱 Jap-Dex — v4.10.0
 
 Aplicativo de estudo de japonês: **vocabulário, kanji, alfabetos (hiragana/katakana),
 SRS (revisão espaçada), quizzes, XP/níveis e 50 conquistas** — 100% offline.
 
 Original: arquivo único `3.8.7.html` (2345 linhas) → reestruturado em módulos
 HTML + CSS + JS (ES modules), com correção de bugs e sanitização de HTML.
+
+### Novidades v4.10.0
+
+- **Voz japonesa no APK (correção):** o Android agora usa o **plugin nativo
+  TextToSpeech** como 1ª opção (voz do sistema, offline com o pacote de idioma
+  japonês instalado) e orienta o usuário se a voz JP não estiver disponível;
+  corrigido também o caso em que o WebView sem `speechSynthesis` ficava mudo
+  sem tentar o TTS online.
+- **Tema claro:** `prefers-color-scheme` (Auto segue o sistema) + botão
+  claro/escuro no topo e seção **Aparência** nas Configurações (Auto/Claro/Escuro).
+- **Missões diárias:** 3 missões por dia (escolhidas pela data), barra de
+  progresso e botão **Resgatar** dando XP bônus; zera sozinho à meia-noite.
+- **Filtro "Focar em não dominadas" no vocabulário:** agora aparece também no
+  quiz de palavras (exclui as já Dominadas; se tudo estiver dominado, usa a
+  lista completa).
+- **Estados vazios guiados:** dicionário vazio sugere 3 **palavras-primeiras**
+  (犬, ありがとう, 学校) com 1 clique + atalhos para Loja/tutorial; busca sem
+  resultado oferece "Limpar busca e filtros".
+- **Conquistas novas (50 → 53):** `shop_10` Colecionador de Temas (10 pacotes
+  comprados), `tutorial_done` Guia do Aprendiz e `word_gold_25` Memória de Aço
+  (25 palavras Dominadas).
 
 ### Novidades v4.9.1
 
@@ -105,8 +126,8 @@ npm.cmd run dist         # gera instalador NSIS + portátil em dist/
 ```
 
 Saída em `dist/`:
-- `Jap-Dex-4.9.1-instalador.exe` — instalador NSIS (escolhe diretório, atalhos)
-- `Jap-Dex-4.9.1-portatil.exe` — executável portátil
+- `Jap-Dex-4.10.0-instalador.exe` — instalador NSIS (escolhe diretório, atalhos)
+- `Jap-Dex-4.10.0-portatil.exe` — executável portátil
 
 > **Windows:** usar `npm.cmd` (o `npm.ps1` é bloqueado pela ExecutionPolicy).
 

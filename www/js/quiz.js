@@ -6,6 +6,7 @@ import { HIRAGANA_CHARS_FULL, HIRAGANA_ROMANJI_FULL, KANJI_EXAMPLES, KATAKANA_CH
 import { processNotifQueue, showFlyout } from './notifications.js';
 import { getWordsForReview, updateWordSRS } from './srs.js';
 import { notifQueue, saveState, state } from './state.js';
+import { bumpDaily, renderDaily } from './daily.js';
 import { updateUI } from './ui/stats.js';
 import { speak } from './ui/tabs.js';
 import { addXP } from './xp.js';
@@ -36,6 +37,13 @@ let availableWords = state.words.filter(w => !w.seen);
              // Fallback para a lista padrão de revisão (SRS L>0)
              availableWords = getWordsForReview().filter(w => w.seen);
 // Exclui 'newWords' que já foram tratadas acima
+        }
+
+        // "Focar em não dominadas" (v4.10): exclui palavras já DOMINADAS
+        // (5+ acertos). Se tudo estiver dominado, usa a lista completa.
+        if (state.settings.focusNonMastered && availableWords.length > 0) {
+            const pending = availableWords.filter(w => (w.stats?.correct || 0) < WORD_GOLD_THRESHOLD);
+            if (pending.length > 0) availableWords = pending;
         }
 
         if (availableWords.length === 0) return null;
@@ -170,7 +178,8 @@ if (!question) {
     // Linha "Focar em não dominadas": só faz sentido em quizzes de itens
     const focusRow = document.getElementById('quiz-focus-row');
     if (focusRow) {
-        focusRow.hidden = (type === 'voc');
+        // v4.10: filtro "Focar em não dominadas" disponível também no vocabulário
+        focusRow.hidden = false;
         const focusCb = document.getElementById('quiz-focus-nonmastered');
         if (focusCb) focusCb.checked = !!state.settings.focusNonMastered;
     }
@@ -218,6 +227,13 @@ const feedbackEl = document.getElementById('quiz-feedback');
 // Aceita múltiplas respostas separadas por / ou ;
     const answers = correctAnswerRaw.split(/[\/;]/).map(a => a.trim().toLowerCase()).filter(a => a);
 const isCorrect = answers.includes(userAnswer);
+
+    /* Missões diárias (v4.10): contadores do dia */
+    if (currentQuiz.type === 'voc') bumpDaily('voc_answered');
+    if (isCorrect) {
+        bumpDaily('quiz_correct');
+        if (currentQuiz.type !== 'voc') bumpDaily('alpha_correct'); // hira/kata/kanji
+    }
 
     if (isCorrect) { 
         feedbackEl.textContent = '✅ Correto!';
@@ -312,6 +328,7 @@ state.kanjiStats[char] = state.kanjiStats[char] ||
     document.getElementById('quiz-next-btn').style.display = 'inline-block';
 inputEl.disabled = true; 
     saveState(); 
+    renderDaily(); // missões diárias: atualiza mesmo em erro (sem updateUI aqui)
 } 
 
 export function modalNext() { 

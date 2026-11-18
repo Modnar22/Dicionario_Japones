@@ -3,8 +3,10 @@ import { checkAchievements } from './achievementLogic.js';
 import { LEVELS } from './config.js';
 import { calculateLevel, processNotifQueue } from './notifications.js';
 import { notifQueue, saveState, state } from './state.js';
+import { bumpDaily } from './daily.js';
 import { updateUI } from './ui/stats.js';
 export function addXP(amount) {
+    if (amount > 0) bumpDaily('xp_gained', amount); // missão "Caçador de XP"
     const oldLevel = state.level;
     state.xp += amount;
 // Calcula novo nível

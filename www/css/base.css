@@ -2,9 +2,29 @@
 /* ===== Theme / Reset (based on previous look) ===== */
 :root{
   --bg1:#041025; --bg2:#022033; --panel:#071827; --card:#0b2740; --muted:#99b0c6;
+  --text:#eaf4ff; --border:rgba(255,255,255,0.10);
   --accent1:#5fb0ff; --accent2:#b58bff; --success:#18d39b; --danger:#ff6b6b;
   --gold1:#ffd66b; --gold2:#ffb84d; --glass: rgba(255,255,255,0.03); --radius:12px; --sidebarW:220px;
   font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial;
+}
+/* ===== TEMA CLARO (v4.10) =====
+   a) forçado: :root[data-theme="light"]
+   b) automático: SO claro, a menos que o usuário force escuro.
+   Acentos escurecidos porque são usados como FUNDO de chips/botões com
+   texto claro (color:var(--bg1)) — precisam de contraste no fundo branco. */
+:root[data-theme="light"]{
+  --bg1:#eef3fa; --bg2:#e2ebf6; --panel:#ffffff; --card:#f8fbfe; --muted:#5b7186;
+  --text:#0e2a45; --border:rgba(8,32,58,0.14);
+  --accent1:#1f6fd0; --accent2:#6a45c4; --success:#0d8f68; --danger:#d84343;
+  --gold1:#a8790c; --gold2:#c99420; --glass:rgba(8,32,58,0.04);
+}
+@media (prefers-color-scheme: light){
+  :root:not([data-theme="dark"]){
+    --bg1:#eef3fa; --bg2:#e2ebf6; --panel:#ffffff; --card:#f8fbfe; --muted:#5b7186;
+    --text:#0e2a45; --border:rgba(8,32,58,0.14);
+    --accent1:#1f6fd0; --accent2:#6a45c4; --success:#0d8f68; --danger:#d84343;
+    --gold1:#a8790c; --gold2:#c99420; --glass:rgba(8,32,58,0.04);
+  }
 }
 *{box-sizing:border-box}
 /* ÚNICO contexto de rolagem: a viewport (html).
@@ -14,7 +34,7 @@
    (espaço gigante mal aproveitado). Agora só o html rola; o body apenas
    ocupa no mínimo a altura da janela. */
 html{height:100%;overflow-x:hidden;}
-body{min-height:100%;margin:0;padding:0;background:linear-gradient(180deg,var(--bg1),var(--bg2));background-attachment:fixed;color:#eaf4ff;-webkit-font-smoothing:antialiased;}
+body{min-height:100%;margin:0;padding:0;background:linear-gradient(180deg,var(--bg1),var(--bg2));background-attachment:fixed;color:var(--text);-webkit-font-smoothing:antialiased;}
 /* Rolagem silenciosa: barra invisível em qualquer área rolável
    (wheel/teclado/toque continuam funcionando — estilo app) */
 *{scrollbar-width:none;-ms-overflow-style:none;}

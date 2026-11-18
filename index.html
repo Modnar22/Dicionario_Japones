@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1"/>
   <!-- Sem Referer: o TTS online (Google) recusa requisições com referente -->
   <meta name="referrer" content="no-referrer"/>
-  <title>Jap-Dex — v4.9.1 (Desconto na Loja)</title>
+  <title>Jap-Dex — v4.10.0 (Voz no APK, Tema Claro e Missões)</title>
 
   <!-- Ícone do projeto -->
   <link rel="icon" href="favicon.ico" sizes="any"/>
@@ -32,10 +32,12 @@
 <button id="help-btn" class="help-btn" aria-label="Abrir tutorial" title="Tutorial">
   <i class="fas fa-question"></i>
 </button>
+<!-- Tema (v4.10): auto → claro → escuro -->
+<button id="theme-toggle" class="help-btn" style="left:126px;" aria-label="Alternar tema"></button>
 <div id="menu-backdrop" class="menu-backdrop"></div>
 
 <div class="sidebar" id="sidebar">
-  <h1>Jap-Dex <span style="font-size: 12px; opacity: 0.6;">v4.9.1</span></h1>
+  <h1>Jap-Dex <span style="font-size: 12px; opacity: 0.6;">v4.10.0</span></h1>
     <div class="level-info">
     <div id="level-display">Level 1</div>
     <div class="level-bar"><div id="xp-progress" class="level-progress" style="width: 0%;"></div></div>
@@ -82,6 +84,11 @@
           <button type="button" class="btn btn-secondary" onclick="clearForm('add-word-form')">Limpar</button>
         </div>
       </form>
+    </div>
+
+    <div class="card" id="daily-card">
+      <h2>Missões Diárias <i class="fas fa-scroll" style="font-size:0.7em;opacity:0.6;"></i></h2>
+      <div id="daily-body"><p style="color:var(--muted);margin:0;">Carregando missões…</p></div>
     </div>
 
     <div class="card" id="srs-status-card">
@@ -201,6 +208,16 @@
       <input type="file" id="import-input" accept="application/json" style="display:none;" onchange="importJSON(event)">
       <p style="margin-top:10px; font-size:0.9em; color:var(--muted);">Importar pode MESCLAR ou SUBSTITUIR os dados atuais. Cuidado.</p>
     
+      <h3 style="margin-top:20px;">Aparência</h3>
+      <div class="theme-opts">
+        <label class="theme-opt"><input type="radio" name="theme-opt" value="auto" onchange="setTheme(this.value)"><i class="fas fa-adjust"></i> Auto</label>
+        <label class="theme-opt"><input type="radio" name="theme-opt" value="light" onchange="setTheme(this.value)"><i class="fas fa-sun"></i> Claro</label>
+        <label class="theme-opt"><input type="radio" name="theme-opt" value="dark" onchange="setTheme(this.value)"><i class="fas fa-moon"></i> Escuro</label>
+      </div>
+      <p style="margin-top:8px; font-size:0.85em; color:var(--muted);">
+        <strong>Auto</strong> segue o tema do sistema (claro/escuro). Também dá para alternar pelo botão
+        <i class="fas fa-adjust"></i> no topo da tela.</p>
+
       <h3 style="margin-top:20px;">Configurações</h3>
       <div class="form-group toggle-switch-container">
         <label for="setting-sound" class="toggle-label">Desativar Sons (XP, Level Up, Conquista)</label>

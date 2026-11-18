@@ -6,11 +6,12 @@ import { state, saveState } from './state.js';
 import { updateUI } from './ui/stats.js';
 import { checkAllAchievements } from './achievementLogic.js';
 import { switchTab, clearForm, speak, toggleMenu, setAlphabetView, toggleWordExtra } from './ui/tabs.js';
-import { renderList } from './ui/wordList.js';
+import { renderList, clearFilters } from './ui/wordList.js';
 import { renderAlphabets } from './ui/alphabetGrid.js';
 import {
   addWord, deleteWord, toggleWordSeen, toggleAllWordsSeen,
   openEditModal, closeEditModal, saveEditedWord,
+  quickAddWord,
 } from './crud/words.js';
 import {
   addKanji, deleteKanji, openKanjiEditModal,
@@ -22,6 +23,8 @@ import {
 import { buyPack, renderShop } from './ui/shop.js';
 import { startTutorial } from './ui/tutorial.js';
 import { exportJSON, importJSON, resetProgress } from './io/backup.js';
+import { applyTheme, cycleTheme, setTheme } from './theme.js';
+import { claimDaily, ensureDaily } from './daily.js';
 
 export function init() {
   try {
@@ -57,6 +60,7 @@ export function init() {
     checkAllAchievements();
 
     // ===== Menu lateral (drawer) =====
+    ensureDaily(); // missões diárias do dia (v4.10)
     document.getElementById('menu-toggle')
       ?.addEventListener('click', () => toggleMenu());
     document.getElementById('menu-backdrop')
@@ -99,6 +103,7 @@ Object.assign(window, {
   openEditModal,
   closeEditModal,
   saveEditedWord,
+  quickAddWord,
   addKanji,
   deleteKanji,
   openKanjiEditModal,
@@ -111,10 +116,15 @@ Object.assign(window, {
   exportJSON,
   importJSON,
   resetProgress,
+  setTheme,
+  cycleTheme,
+  clearFilters,
+  claimDaily,
   updateUI,
 });
 
 /* ===== Listeners globais ===== */
+applyTheme(); // tema antes mesmo da 1ª renderização (evita flash)
 document.addEventListener('DOMContentLoaded', init);
 
 // Uma única fonte de verdade para o toggle de som

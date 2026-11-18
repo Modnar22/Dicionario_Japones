@@ -75,14 +75,15 @@ export function toggleWordExtra() {
   btn.classList.toggle('open', open);
 }
 
-/* ===== Pronúncia (Web Speech API + áudio local) =====
-   Problema anterior: `getVoices()` retorna [] na 1ª chamada (carregamento
-   assíncrono) e, sem voz japonesa instalada no SO, o utterance não soa.
-   Correção: cadeia em 4 níveis:
-   1) kana curto → arquivo local assets/audio/kana/*.mp3 (offline);
-   2) voz japonesa local (cache + voiceschanged);
+/* ===== Pronúncia (TTS nativo no APK + Web Speech API + áudio local) =====
+   Cadeia de fallback:
+   0) kana curto → arquivo local assets/audio/kana/*.mp3 (offline);
+   1) APK (Capacitor) → plugin NATIVO TextToSpeech (voz do Android, offline
+      se o pacote de idioma japonês estiver instalado) — corrige o bug de
+      voz muda no Android;
+   2) speechSynthesis local (Electron/navegador) com voz japonesa;
    3) TTS online (Google, tl=ja) — exigido `referrer: no-referrer`;
-   4) voz padrão do sistema.                                          */
+   4) voz padrão do sistema (último recurso web).                        */
 let cachedVoices = [];
 
 function refreshVoices() {
@@ -94,6 +95,37 @@ function refreshVoices() {
 if ('speechSynthesis' in window) {
   refreshVoices();
   window.speechSynthesis.addEventListener('voiceschanged', refreshVoices);
+}
+
+/* Plugin nativo (Android/Capacitor). Só existe no plataforma nativa —
+   no Electron/navegador `isNativePlatform()` é false e retornamos null. */
+let nativeTTS = null;
+let nativeTTSChecked = false;
+function getNativeTTS() {
+  if (nativeTTSChecked) return nativeTTS;
+  nativeTTSChecked = true;
+  try {
+    const cap = window.Capacitor;
+    if (!cap) return null;
+    if (typeof cap.isNativePlatform === 'function' && !cap.isNativePlatform()) return null;
+    if (typeof cap.registerPlugin === 'function') {
+      nativeTTS = cap.registerPlugin('TextToSpeech');
+    } else if (cap.Plugins && cap.Plugins.TextToSpeech) {
+      nativeTTS = cap.Plugins.TextToSpeech;
+    }
+  } catch (e) {
+    nativeTTS = null;
+  }
+  return nativeTTS;
+}
+
+/* Aviso de "sem voz" — uma vez por sessão (evita toast a cada clique). */
+let warnedNoVoice = false;
+function warnNoVoice(detail) {
+  if (warnedNoVoice) return;
+  warnedNoVoice = true;
+  showFlyout('wrong', 'Voz japonesa indisponível', detail,
+    '<i class="fas fa-volume-mute"></i>');
 }
 
 function findVoice(lang) {
@@ -141,28 +173,81 @@ function kanaLocalPath(text) {
     + '.mp3';
 }
 
-/* Cadeia de fallback para textos que não são kana curto (palavras, kanji):
-   1) voz japonesa local (speechSynthesis); 2) TTS online (Google, tl=ja);
-   3) voz padrão do sistema. */
+/* TTS online (Google) — usado como fallback quando não há voz local.
+   `onFail` é chamado se o áudio não puder tocar (offline/bloqueio). */
+function playGoogleTTS(text, lang, onFail) {
+  const tl = (lang || 'ja-JP').split('-')[0];
+  const url = 'https://translate.google.com/translate_tts?ie=UTF-8&client=tw-ob&tl='
+    + tl + '&q=' + encodeURIComponent(text);
+  const audio = new Audio(url);
+  currentAudio = audio;
+  audio.play().catch(() => {
+    if (currentAudio === audio) {
+      currentAudio = null;
+      if (onFail) onFail();
+    }
+  });
+}
+
+/* Falha do TTS nativo: quase sempre = pacote de voz japonês não instalado
+   no Android. Orienta o usuário e tenta o TTS online como alívio.       */
+function nativeSpeakFailed(text, lang) {
+  const ntts = getNativeTTS();
+  const fallbackOnline = () => playGoogleTTS(text, lang, () =>
+    warnNoVoice('Instale o pacote de voz japonês nas configurações de TTS do Android ou conecte-se à internet para ouvir a pronúncia.'));
+  if (ntts && typeof ntts.isLanguageSupported === 'function') {
+    ntts.isLanguageSupported({ lang: lang || 'ja-JP' })
+      .then((r) => {
+        if (r && r.supported === false) {
+          warnNoVoice('Instale o pacote de voz japonês nas configurações de TTS do Android (Configurar → Vozes → Japonês) ou conecte-se à internet.');
+          if (typeof ntts.openInstall === 'function') ntts.openInstall().catch(() => {});
+        }
+        fallbackOnline();
+      })
+      .catch(fallbackOnline);
+  } else {
+    fallbackOnline();
+  }
+}
+
+/* Cadeia de síntese para textos que não são kana curto (palavras/kanji). */
 function speakFallback(text, lang) {
-  if (!('speechSynthesis' in window)) return;
-  const voice = findVoice(lang);
-  if (voice) {
-    speakWithVoice(text, lang, voice);
+  // 1) APK: TTS NATIVO do Android (corrige voz muda no celular)
+  const ntts = getNativeTTS();
+  if (ntts && typeof ntts.speak === 'function') {
+    ntts.speak({
+      text, lang: lang || 'ja-JP',
+      rate: 1.0, pitch: 1.0, volume: 1.0, queueStrategy: 0, // Flush: nova fala substitui
+    }).catch(() => nativeSpeakFailed(text, lang));
     return;
   }
-  const url = 'https://translate.google.com/translate_tts?ie=UTF-8&client=tw-ob&tl=ja&q='
-    + encodeURIComponent(text);
-  const audio = new Audio(url);
-  audio.play().catch(() => speakWithVoice(text, lang, null)); // último recurso
+
+  // 2) Web (Electron/navegador) com speechSynthesis
+  if ('speechSynthesis' in window) {
+    const voice = findVoice(lang);
+    if (voice) {
+      speakWithVoice(text, lang, voice);
+      return;
+    }
+    // Sem voz japonesa local → tenta online; se falhar, voz padrão
+    playGoogleTTS(text, lang, () => speakWithVoice(text, lang, null));
+    return;
+  }
+
+  // 3) BUG CORRIGIDO: WebView sem speechSynthesis retornava em silêncio
+  //    sem tentar o TTS online — agora tenta (e avisa se não conseguir).
+  playGoogleTTS(text, lang, () =>
+    warnNoVoice('Não há síntese de voz neste dispositivo. Conecte-se à internet para ouvir a pronúncia.'));
 }
 
 export function speak(text, lang = 'ja-JP') {
   if (!text) return;
 
-  // Cancela qualquer fala em andamento
+  // Cancela qualquer fala em andamento (web + nativo)
   if ('speechSynthesis' in window) window.speechSynthesis.cancel();
   if (currentAudio) { currentAudio.pause(); currentAudio = null; }
+  const ntts = getNativeTTS();
+  if (ntts && typeof ntts.stop === 'function') ntts.stop().catch(() => {});
 
   // 1) Kana → arquivo local (offline, sem voz do sistema)
   const local = kanaLocalPath(text);

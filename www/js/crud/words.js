@@ -1,6 +1,7 @@
 /* ===== Imports ===== */
 import { checkAllAchievements } from '../achievementLogic.js';
 import { XP_BY_JLPT } from '../config.js';
+import { bumpDaily } from '../daily.js';
 import { showConfirm, showFlyout } from '../notifications.js';
 import { saveState, state } from '../state.js';
 import { updateUI } from '../ui/stats.js';
@@ -54,12 +55,45 @@ const newWord = {
         }
     };
 state.words.push(newWord);
+    bumpDaily('words_added'); // missão "Novas Palavras"
     clearForm('add-word-form');
     addXP(XP_BY_JLPT[newWord.jlpt]); // Adiciona XP ao adicionar a palavra
     checkAllAchievements();
 // Verifica se alguma conquista foi desbloqueada
     saveState();
     updateUI();
+}
+
+/* ===== Estados vazios guiados (v4.10) =====
+   Adiciona uma "palavra-primeira" com um clique, usando a mesma
+   pipeline do formulário (XP + conquistas + save). */
+export function quickAddWord(text, reading, translation) {
+    if (state.words.some(w => w.text === text)) {
+        showFlyout('wrong', 'Já está no dicionário',
+            `"${text}" já foi adicionada antes.`, '<i class="fas fa-info-circle"></i>');
+        return false;
+    }
+    const newWord = {
+        id: Date.now() + Math.random(),
+        text, reading, translation,
+        jlpt: 'N5',
+        category: 'Primeiras Palavras',
+        tags: [],
+        notes: '',
+        seen: false,
+        stats: { correct: 0, wrong: 0, last: null, srs_level: 0, next_review_date: null },
+    };
+    state.words.push(newWord);
+    bumpDaily('words_added'); // missão "Novas Palavras"
+    const xp = XP_BY_JLPT.N5 || 5;
+    addXP(xp);
+    checkAllAchievements();
+    saveState();
+    updateUI();
+    showFlyout('xp', 'Primeira palavra! 📖',
+        `${text} (${reading}) = ${translation} · +${xp} XP`,
+        '<i class="fas fa-plus-circle"></i>');
+    return true;
 }
 
 export async function deleteWord(id) {

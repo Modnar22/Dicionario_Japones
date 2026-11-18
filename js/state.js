@@ -31,6 +31,7 @@ export function defaultState() {
  sound: true, 
             tutorialSeen: false,   // tutorial em etapas já foi concluído?
             focusNonMastered: false, // quiz: focar em não dominadas?
+            theme: 'auto',          // 'auto' | 'light' | 'dark' (v4.10)
         }, 
     };
 } 

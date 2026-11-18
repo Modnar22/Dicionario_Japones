@@ -90,6 +90,36 @@ export function renderList() {
     const jlptFilter = document.getElementById('filter-jlpt').value;
     
 const categoryFilter = document.getElementById('filter-category').value;
+
+    /* ===== ESTADOS VAZIOS GUIADOS (v4.10) ===== */
+    if (state.words.length === 0) {
+        listEl.innerHTML = `
+        <li class="empty-state">
+          <i class="fas fa-seedling empty-icon" aria-hidden="true"></i>
+          <h3>Comece seu dicionário!</h3>
+          <p>Você ainda não anotou nenhuma palavra. Adicione uma acima ou
+             clique em uma das <strong>palavras-primeiras</strong>:</p>
+          <div class="empty-quick">
+            <button class="btn btn-primary" onclick="quickAddWord('犬','いぬ','cachorro')">
+              犬 <small>(いぬ · cachorro)</small></button>
+            <button class="btn btn-primary" onclick="quickAddWord('ありがとう','ありがとう','obrigado(a)')">
+              ありがとう <small>(obrigado)</small></button>
+            <button class="btn btn-primary" onclick="quickAddWord('学校','がっこう','escola')">
+              学校 <small>(がっこう)</small></button>
+          </div>
+          <div class="empty-actions">
+            <button class="btn btn-secondary" onclick="switchTab('shop')">
+              <i class="fas fa-store"></i> Comprar pacote na Loja</button>
+            <button class="btn btn-secondary" onclick="startTutorial()">
+              <i class="fas fa-route"></i> Fazer o tutorial</button>
+          </div>
+        </li>`;
+        document.getElementById('word-count').textContent = 0;
+        document.getElementById('srs-review-count').textContent = 0;
+        document.getElementById('srs-review-count').style.color = 'var(--muted)';
+        return;
+    }
+
     let filteredWords = state.words;
 
     // 1. Filtering by Search
@@ -112,7 +142,15 @@ const categoryFilter = document.getElementById('filter-category').value;
         filteredWords = filteredWords.filter(word => word.category && word.category.trim() === categoryFilter);
 }
     
-    listEl.innerHTML = filteredWords.map(makeWordItemHTML).join(''); 
+    listEl.innerHTML = filteredWords.length > 0
+        ? filteredWords.map(makeWordItemHTML).join('')
+        : `<li class="empty-state empty-no-results">
+             <i class="fas fa-filter empty-icon" aria-hidden="true"></i>
+             <h3>Nenhuma palavra encontrada</h3>
+             <p>Nada bate com a busca ou os filtros ativos.</p>
+             <button class="btn btn-primary" onclick="clearFilters()">
+               <i class="fas fa-undo"></i> Limpar busca e filtros</button>
+           </li>`;
     document.getElementById('word-count').textContent = filteredWords.length;
 // Atualiza o contador de revisão
     const reviewCount = getWordsForReview().length;
@@ -129,3 +167,14 @@ const categoryFilterEl = document.getElementById('filter-category');
     
                               ).join('');
 } 
+
+/* Limpa busca e filtros (usado pelo estado "nenhum resultado"). */
+export function clearFilters() {
+    const search = document.getElementById('search-input');
+    if (search) search.value = '';
+    const jlpt = document.getElementById('filter-jlpt');
+    if (jlpt) jlpt.value = '';
+    const cat = document.getElementById('filter-category');
+    if (cat) cat.value = '';
+    renderList();
+}
