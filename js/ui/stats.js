@@ -7,6 +7,7 @@ import { renderAlphabets } from '../ui/alphabetGrid.js';
 import { renderList } from '../ui/wordList.js';
 import { applyTheme } from '../theme.js';
 import { renderDaily } from '../daily.js';
+import { renderBackupBanner } from '../io/backup.js';
 export function updateStats() { 
     const uniqueCategories = [...new Set(state.words.map(w => w.category ? w.category.trim() : '').filter(c => c))];
 const unlockedCount = state.achievements.filter(a => a.unlocked).length;
@@ -46,4 +47,6 @@ if (soundSettingEl) {
     }
     // Re-sincroniza tema (import/reset podem ter trocado settings)
     applyTheme();
+    // Banner "último backup há X dias" (v4.11)
+    renderBackupBanner();
 } 

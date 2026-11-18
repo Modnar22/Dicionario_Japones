@@ -1,10 +1,28 @@
-# 📱 Jap-Dex — v4.10.0
+# 📱 Jap-Dex — v4.11.0
 
 Aplicativo de estudo de japonês: **vocabulário, kanji, alfabetos (hiragana/katakana),
 SRS (revisão espaçada), quizzes, XP/níveis e 50 conquistas** — 100% offline.
 
 Original: arquivo único `3.8.7.html` (2345 linhas) → reestruturado em módulos
 HTML + CSS + JS (ES modules), com correção de bugs e sanitização de HTML.
+
+### Novidades v4.11.0
+
+- **Banner de backup inteligente:** aviso no topo indicando "nunca fez backup"
+  ou "último backup há X dias" (fica dourado após 7 dias, vermelho após 30) com
+  botão **Fazer backup agora**. **Auto-backup diário**: salva o progresso
+  automaticamente a cada 24h (silencioso, com aviso no banner) e, se o
+  navegador apagar os dados, oferece **Restaurar** o backup automático em 1 clique.
+- **Verificar atualizações:** botão nas Configurações consulta a API do GitHub
+  e mostra se há versão nova (com link para a release); como o repositório é
+  **privado**, você pode colar um **token pessoal** (scope `public_repo`) para
+  autenticar — sem token a consulta anônima retorna 404 e é tratada com aviso.
+- **Links externos no Electron:** agora abrem no navegador padrão do sistema
+  (`shell.openExternal`) em vez de carregar dentro do app.
+- **Manutenção:** Electron **33 → 45** e electron-builder **25 → 26**;
+  `npm audit` de **21 → 9** vulnerabilidades (as 9 restantes são do
+  `picomatch` em pacotes de **desenvolvimento**, sem correção upstream;
+  `minimatch` fixado via `overrides` sem quebrar o `glob@7` do empacotamento).
 
 ### Novidades v4.10.0
 
@@ -126,8 +144,9 @@ npm.cmd run dist         # gera instalador NSIS + portátil em dist/
 ```
 
 Saída em `dist/`:
-- `Jap-Dex-4.10.0-instalador.exe` — instalador NSIS (escolhe diretório, atalhos)
-- `Jap-Dex-4.10.0-portatil.exe` — executável portátil
+- `Jap-Dex-4.11.0-instalador.exe` — instalador NSIS (escolhe diretório, atalhos)
+- `Jap-Dex-4.11.0-portatil.exe` — executável portátil
+- `Jap-Dex-4.11.0.apk` — APK de release (assinado com o keystore do projeto)
 
 > **Windows:** usar `npm.cmd` (o `npm.ps1` é bloqueado pela ExecutionPolicy).
 

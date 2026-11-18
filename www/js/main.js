@@ -22,7 +22,8 @@ import {
 } from './quiz.js';
 import { buyPack, renderShop } from './ui/shop.js';
 import { startTutorial } from './ui/tutorial.js';
-import { exportJSON, importJSON, resetProgress } from './io/backup.js';
+import { exportJSON, importJSON, resetProgress, autoBackup, restoreAutoBackup, renderBackupBanner } from './io/backup.js';
+import { checkForUpdates, saveGhToken, clearGhToken } from './updateCheck.js';
 import { applyTheme, cycleTheme, setTheme } from './theme.js';
 import { claimDaily, ensureDaily } from './daily.js';
 
@@ -46,6 +47,7 @@ export function init() {
     }
 
     saveState();
+    autoBackup(); // v4.11: slot de segurança a cada 24h
     updateUI();
 
     // Garante que a aba 'Dicionário' esteja ativa no início
@@ -116,6 +118,10 @@ Object.assign(window, {
   exportJSON,
   importJSON,
   resetProgress,
+  restoreAutoBackup,
+  checkForUpdates,
+  saveGhToken,
+  clearGhToken,
   setTheme,
   cycleTheme,
   clearFilters,

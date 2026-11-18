@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1"/>
   <!-- Sem Referer: o TTS online (Google) recusa requisições com referente -->
   <meta name="referrer" content="no-referrer"/>
-  <title>Jap-Dex — v4.10.0 (Voz no APK, Tema Claro e Missões)</title>
+  <title>Jap-Dex — v4.11.0 (Backup Inteligente e Verificação de Atualizações)</title>
 
   <!-- Ícone do projeto -->
   <link rel="icon" href="favicon.ico" sizes="any"/>
@@ -37,7 +37,7 @@
 <div id="menu-backdrop" class="menu-backdrop"></div>
 
 <div class="sidebar" id="sidebar">
-  <h1>Jap-Dex <span style="font-size: 12px; opacity: 0.6;">v4.10.0</span></h1>
+  <h1>Jap-Dex <span style="font-size: 12px; opacity: 0.6;">v4.11.0</span></h1>
     <div class="level-info">
     <div id="level-display">Level 1</div>
     <div class="level-bar"><div id="xp-progress" class="level-progress" style="width: 0%;"></div></div>
@@ -202,11 +202,37 @@
     
     <div class="card">
       <h2>Configurações e Manutenção</h2>
+      <!-- Banner de backup (v4.11) — conteúdo preenchido por renderBackupBanner() -->
+      <div id="backup-banner" class="backup-banner backup-ok" role="status"></div>
+
       <h3 style="margin-top:20px;">Backup de Dados</h3>
       <button class="btn btn-primary" onclick="exportJSON()"><i class="fas fa-download"></i> Exportar JSON</button>
       <button class="btn btn-secondary" onclick="document.getElementById('import-input').click()"><i class="fas fa-upload"></i> Importar JSON</button>
       <input type="file" id="import-input" accept="application/json" style="display:none;" onchange="importJSON(event)">
       <p style="margin-top:10px; font-size:0.9em; color:var(--muted);">Importar pode MESCLAR ou SUBSTITUIR os dados atuais. Cuidado.</p>
+      <p style="margin-top:6px; font-size:0.85em; color:var(--muted);">
+        <i class="fas fa-database"></i> Um backup automático local é regravado a cada 24h
+        (o botão "Restaurar automático" no banner acima recupera essa cópia).</p>
+
+      <h3 style="margin-top:20px;">Atualizações</h3>
+      <button class="btn btn-primary" id="check-updates-btn" onclick="checkForUpdates()">
+        <i class="fas fa-sync-alt"></i> Verificar atualizações</button>
+      <div id="update-result" class="update-result" hidden></div>
+      <details class="gh-token-details" id="gh-token-details">
+        <summary><i class="fas fa-key"></i> Usar token de acesso (repositório privado)</summary>
+        <div class="gh-token-row">
+          <label class="sr-only" for="gh-token-input">Token do GitHub</label>
+          <input type="password" id="gh-token-input" placeholder="ghp_... ou github_pat_..." autocomplete="off">
+          <button class="btn btn-secondary btn-sm" onclick="saveGhToken()"><i class="fas fa-save"></i> Salvar</button>
+          <button class="btn btn-secondary btn-sm" onclick="clearGhToken()"><i class="fas fa-eraser"></i> Limpar</button>
+        </div>
+        <p class="gh-token-hint">O token fica <strong>só neste dispositivo</strong> (nunca entra nos backups)
+          e é usado apenas para ler as releases do GitHub. Crie um em github.com → Settings → Developer settings →
+          Personal access tokens (escopo <code>public_repo</code> ou <code>repo</code>).</p>
+      </details>
+      <p style="margin-top:8px; font-size:0.85em; color:var(--muted);">
+        Consulta as releases do GitHub e abre a página da versão nova para baixar
+        (instalador/portátil/APK).</p>
     
       <h3 style="margin-top:20px;">Aparência</h3>
       <div class="theme-opts">

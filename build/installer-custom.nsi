@@ -21,6 +21,15 @@ Var newDesktopLink
 Var oldDesktopLink
 Var oldShortcutName
 Var oldMenuDirectory
+# electron-builder 26: FIND_PROCESS/KILL_PROCESS/CHECK_APP_RUNNING usam
+# $IsPowerShellAvailable/$CmdPath/$PowerShellPath (normalmente declaradas
+# dentro de IS_POWERSHELL_AVAILABLE/CHECK_APP_RUNNING, que o branch custom
+# pula). Declaradas aqui em escopo global — uma unica vez, pois a Section e
+# o desinstalador compartilham a mesma compilacao (fase unica) e o
+# CHECK_APP_RUNNING do template falharia com "already declared".
+Var IsPowerShellAvailable
+Var CmdPath
+Var PowerShellPath
 
 !include "common.nsh"
 !include "MUI2.nsh"
@@ -38,6 +47,9 @@ Var oldMenuDirectory
 # Call de funcao (so plugins: nsExec/tasklist + MessageBox).
 # =====================================================================
 !macro customCheckAppRunning
+  # 1 = PowerShell indisponivel -> FIND_PROCESS usa o caminho tasklist/findstr
+  # (o comportamento original deste script; sem invocar PowerShell).
+  StrCpy $IsPowerShellAvailable 1
   !insertmacro FIND_PROCESS "${APP_EXECUTABLE_FILENAME}" $R0
   ${if} $R0 == 0
     ${if} ${isUpdated}
@@ -94,6 +106,20 @@ Var oldMenuDirectory
       ${endIf}
     not_running:
   ${endIf}
+!macroend
+
+# =====================================================================
+# MODIFICACAO 4 (electron-builder 26): versao unica do CHECK_APP_RUNNING
+# para a fase unica. O macro do template declara Var /GLOBAL CmdPath e
+# PowerShellPath no corpo — com Section + uninstaller compilados juntos,
+# o segundo insert daria "variable already declared". Aqui as Vars vem
+# declaradas no topo do script; o resto (customCheckAppRunning -> FIND_PROCESS
+# com tasklist) e identico ao CHECK_APP_RUNNING com custom branch.
+# =====================================================================
+!macro CHECK_APP_RUNNING_JAP
+  StrCpy $CmdPath "$SYSDIR\cmd.exe"
+  StrCpy $PowerShellPath "$SYSDIR\WindowsPowerShell\v1.0\powershell.exe"
+  !insertmacro customCheckAppRunning
 !macroend
 
 !include "allowOnlyOneInstallerInstance.nsh"
@@ -237,10 +263,10 @@ Section "install" INSTALL_SECTION_ID
         StrCpy $1 $hwndparent
         System::Call 'user32::ShutdownBlockReasonCreate(${SYSTYPE_PTR}r1, w "$(installing)")'
       ${endif}
-      !insertmacro CHECK_APP_RUNNING
+      !insertmacro CHECK_APP_RUNNING_JAP
     !else
       ${ifNot} ${UAC_IsInnerInstance}
-        !insertmacro CHECK_APP_RUNNING
+        !insertmacro CHECK_APP_RUNNING_JAP
       ${endif}
     !endif
 
@@ -350,5 +376,7 @@ FunctionEnd
 # quando BUILD_UNINSTALLER estava definido (fase 1 - compilacao do stub).
 # Aqui a compilacao e unica, entao o codigo do desinstalador e incluido
 # sempre, para que WriteUninstaller o embuta no "Uninstall *.exe".
+# MODIFICACAO 2b (electron-builder 26): inclui a NOSSA copia patched —
+# o original insertaria CHECK_APP_RUNNING de novo ("already declared").
 # =====================================================================
-!include "uninstaller.nsh"
+!include "${PROJECT_DIR}\build\uninstaller-custom.nsh"

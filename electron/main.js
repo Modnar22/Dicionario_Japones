@@ -1,5 +1,5 @@
 /* ===== Jap-Dex — processo principal do Electron ===== */
-const { app, BrowserWindow } = require('electron');
+const { app, BrowserWindow, shell } = require('electron');
 const path = require('path');
 const fs = require('fs');
 
@@ -28,14 +28,30 @@ function createWindow() {
   // Remove a barra de menus padrão (F10 ainda abre, mas fica oculta)
   win.setMenuBarVisibility(false);
 
+  /* Links externos (GitHub/releases) abrem no navegador do sistema —
+     evita criar janelas soltas do Electron (v4.11: "Ver atualizações"). */
+  win.webContents.setWindowOpenHandler(({ url }) => {
+    if (/^https?:\/\//.test(url)) shell.openExternal(url);
+    return { action: 'deny' };
+  });
+  win.webContents.on('will-navigate', (e, url) => {
+    if (/^https?:\/\//.test(url)) {
+      e.preventDefault();
+      shell.openExternal(url);
+    }
+  });
+
   win.once('ready-to-show', () => win.show());
 
   win.loadFile(path.join(__dirname, '..', 'index.html'));
 
   // Erros de renderização vão para o console do terminal (útil no dev)
-  win.webContents.on('console-message', (_e, level, message, line, sourceId) => {
-    if (level >= 3) {
-      console.error(`[renderer] ${message} (${sourceId}:${line})`);
+  // Electron 45: props no objeto Event (evitar assinatura posicional — ela
+  // dispara warning de deprecation; manter 1 parâmetro só).
+  win.webContents.on('console-message', (e) => {
+    const level = e && typeof e === 'object' ? e.level : undefined;
+    if (level === 'error' || level === 3) {
+      console.error(`[renderer] ${e.message} (${e.sourceId}:${e.line})`);
     }
   });
 }

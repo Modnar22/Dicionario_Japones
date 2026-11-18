@@ -5,6 +5,7 @@ import { showConfirm, showFlyout } from '../notifications.js';
 import { defaultState, replaceState, resetState, saveState, state } from '../state.js';
 import { updateUI } from '../ui/stats.js';
 export function exportJSON() {
+    state.lastBackup = new Date().toISOString(); // v4.11: marca p/ o banner
     saveState();
 // Garante o estado mais recente
     const dataStr = JSON.stringify(state, null, 2);
@@ -18,7 +19,112 @@ a.download = `jap-dex_backup_${new Date().toISOString().slice(0, 10)}.json`;
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
     /* BUG Nº6: alert() bloqueante → toast não-bloqueante */
-    showFlyout('xp', 'Exportado!', 'Dados exportados com sucesso.', '<i class="fas fa-download"></i>');
+    showFlyout('xp', 'Exportado!', 'Dados exportados com sucesso. Guarde o arquivo em local seguro.', '<i class="fas fa-download"></i>');
+    renderBackupBanner();
+}
+
+/* ===== BACKUP AUTOMÁTICO (v4.11) =====
+   Slot de segurança no localStorage: cópia completa do estado regravada a
+   cada 24h — protege contra reset/acidente no MESMO aparelho. O download de
+   arquivo (Exportar JSON) continua sendo o backup real para outro suporte. */
+const AUTO_BACKUP_KEY = 'jp_backup_slot';
+const AUTO_BACKUP_INTERVAL = 24 * 60 * 60 * 1000;
+
+export function getAutoBackupSlot() {
+    try {
+        const raw = localStorage.getItem(AUTO_BACKUP_KEY);
+        if (!raw) return null;
+        const slot = JSON.parse(raw);
+        return slot && slot.date && slot.data ? slot : null;
+    } catch (e) { return null; }
+}
+
+export function autoBackup(force) {
+    try {
+        const slot = getAutoBackupSlot();
+        const fresh = slot && (Date.now() - new Date(slot.date).getTime()) < AUTO_BACKUP_INTERVAL;
+        if (fresh && !force) return false;
+        localStorage.setItem(AUTO_BACKUP_KEY,
+            JSON.stringify({ date: new Date().toISOString(), data: state }));
+        state.autoBackupAt = new Date().toISOString();
+        saveState();
+        return true;
+    } catch (e) {
+        console.error('autoBackup falhou:', e);
+        return false;
+    }
+}
+
+/* Restaura o slot automático (SUBSTITUI o progresso atual). */
+export async function restoreAutoBackup() {
+    const slot = getAutoBackupSlot();
+    if (!slot) {
+        showFlyout('wrong', 'Sem backup automático',
+            'Nenhum backup automático encontrado neste dispositivo.',
+            '<i class="fas fa-info-circle"></i>');
+        return;
+    }
+    const when = new Date(slot.date).toLocaleString('pt-BR');
+    const ok = await showConfirm('Restaurar backup automático',
+        `Substituir TODO o progresso atual pela cópia automática de ${when}? ` +
+        'Recomendamos exportar o backup atual antes.', 'Restaurar');
+    if (!ok) return;
+    replaceState(slot.data);
+    state.words.forEach(w => {
+        w.stats = w.stats || { correct: 0, wrong: 0, last: null, srs_level: 0, next_review_date: null };
+        w.stats.srs_level = w.stats.srs_level || 0;
+        w.stats.next_review_date = w.stats.next_review_date || null;
+        if (typeof w.seen !== 'boolean') w.seen = false;
+        if (w.id === undefined) w.id = Date.now() + Math.random();
+    });
+    state.kanji.forEach(k => { if (k.id === undefined) k.id = Date.now() + Math.random(); });
+    let newLevel = 1;
+    for (let i = LEVELS.length - 1; i >= 0; i--) {
+        if (state.xp >= LEVELS[i].xp) { newLevel = LEVELS[i].level; break; }
+    }
+    state.level = newLevel;
+    saveState();
+    checkAllAchievements();
+    updateUI();
+    showFlyout('xp', 'Backup restaurado! 🔄',
+        `Cópia automática de ${when} aplicada com sucesso.`, '<i class="fas fa-history"></i>');
+}
+
+/* Banner "último backup há X dias" (Configurações). */
+export function renderBackupBanner() {
+    const el = document.getElementById('backup-banner');
+    if (!el) return;
+    const now = Date.now();
+    const last = state.lastBackup ? new Date(state.lastBackup) : null;
+    const slot = getAutoBackupSlot();
+
+    let cls, icon, text;
+    if (!last) {
+        cls = 'backup-danger'; icon = 'fa-triangle-exclamation';
+        text = '<strong>Nenhum backup feito ainda.</strong> Clique em "Exportar JSON" para salvar seus dados.';
+    } else {
+        const days = Math.floor((now - last.getTime()) / 86400000);
+        const when = last.toLocaleDateString('pt-BR');
+        if (days >= 7) {
+            cls = 'backup-warn'; icon = 'fa-triangle-exclamation';
+            text = `<strong>Seu último backup foi há ${days} dias</strong> (${when}) — exporte de novo para não arriscar perder progresso.`;
+        } else {
+            cls = 'backup-ok'; icon = 'fa-check-circle';
+            text = `<strong>Último backup: ${days === 0 ? 'hoje' : `há ${days} dia${days > 1 ? 's' : ''}`}</strong> (${when}).`;
+        }
+    }
+    const autoLine = slot
+        ? `<span class="backup-auto"><i class="fas fa-database"></i> Backup automático local: ${new Date(slot.date).toLocaleString('pt-BR')}</span>`
+        : '<span class="backup-auto"><i class="fas fa-database"></i> Backup automático: aguardando 1º ciclo (24h)</span>';
+
+    el.className = `backup-banner ${cls}`;
+    el.innerHTML = `
+      <i class="fas ${icon}" aria-hidden="true"></i>
+      <span class="backup-text">${text}</span>
+      <span class="backup-actions">${autoLine}
+        ${slot ? `<button class="btn btn-secondary btn-sm" onclick="restoreAutoBackup()">
+          <i class="fas fa-history"></i> Restaurar automático</button>` : ''}
+      </span>`;
 }
 
 export function importJSON(event) {

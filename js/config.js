@@ -2,6 +2,9 @@
 /* BUG Nº9: a UI dizia v4.7 mas a chave era jp_app_v4_0 — unificado para
    v4_7. O antigo jp_app_v4_0 é migrado automaticamente em state.js.   */
 export const STORAGE_KEY = 'jp_app_v4_7';
+/* Versão atual do app (usada no "Verificar atualizações") — bumpar a cada
+   release junto com package.json/index.html.                            */
+export const APP_VERSION = '4.11.0';
 export const ALPHA_SILVER_THRESHOLD = 3; 
 export const ALPHA_GOLD_THRESHOLD = 5;   // 5 acertos = DOMINADA (maestria)
 export const WORD_SILVER_THRESHOLD = 3; // Adicionado como constante global (Ponto 3)
