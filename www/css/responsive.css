@@ -41,4 +41,13 @@
   #dict .card .form-group .btn:first-child {
     margin-bottom: 10px; 
   }
+
+  /* v4.11.1: botões diretos do card (Exportar/Importar/Verificar) empilham
+     cheios e alinhados — sem o margin-left do `.btn + .btn` que os deixava
+     indentados e grudados quando quebravam de linha no mobile. */
+  #settings .card > .btn {
+    display: block;
+    width: 100%;
+    margin: 0 0 10px;
+  }
 }

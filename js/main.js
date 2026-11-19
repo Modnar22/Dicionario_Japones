@@ -23,7 +23,8 @@ import {
 import { buyPack, renderShop } from './ui/shop.js';
 import { startTutorial } from './ui/tutorial.js';
 import { exportJSON, importJSON, resetProgress, autoBackup, restoreAutoBackup, renderBackupBanner } from './io/backup.js';
-import { checkForUpdates, saveGhToken, clearGhToken } from './updateCheck.js';
+import { checkForUpdates, saveGhToken, clearGhToken,
+  downloadAndInstallUpdate, installDownloadedUpdate } from './updateCheck.js';
 import { applyTheme, cycleTheme, setTheme } from './theme.js';
 import { claimDaily, ensureDaily } from './daily.js';
 
@@ -70,6 +71,10 @@ export function init() {
     document.addEventListener('keydown', (e) => {
       if (e.key === 'Escape') toggleMenu(false);
     });
+
+    // ===== Tema rápido (v4.11.1: o botão não tinha listener — não fazia nada) =====
+    document.getElementById('theme-toggle')
+      ?.addEventListener('click', () => cycleTheme());
 
     // ===== Tutorial em etapas (1ª execução + botão "?") =====
     document.getElementById('help-btn')
@@ -120,6 +125,8 @@ Object.assign(window, {
   resetProgress,
   restoreAutoBackup,
   checkForUpdates,
+  downloadAndInstallUpdate,
+  installDownloadedUpdate,
   saveGhToken,
   clearGhToken,
   setTheme,

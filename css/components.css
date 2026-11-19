@@ -261,6 +261,9 @@ input:checked + .slider:before{-webkit-transform:translateX(16px);-ms-transform:
 .update-box.up-to-date > i{color:var(--success);}
 .update-box.error{border-color:var(--danger);background:rgba(255,107,107,0.08);}
 .update-box.error > i{color:var(--danger);}
+/* Botões de ação do box de atualização (v4.11.1: baixar/instalar) */
+.update-actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center;}
+.update-box .update-actions{flex:0 1 auto;min-width:auto;}
 .gh-token-details{margin-top:10px;border:1px solid var(--border);border-radius:var(--radius);
   padding:10px 14px;background:var(--panel);font-size:0.88em;}
 .gh-token-details summary{cursor:pointer;font-weight:600;color:var(--accent1);}

@@ -1,10 +1,25 @@
-# 📱 Jap-Dex — v4.11.0
+# 📱 Jap-Dex — v4.11.1
 
 Aplicativo de estudo de japonês: **vocabulário, kanji, alfabetos (hiragana/katakana),
 SRS (revisão espaçada), quizzes, XP/níveis e 50 conquistas** — 100% offline.
 
 Original: arquivo único `3.8.7.html` (2345 linhas) → reestruturado em módulos
 HTML + CSS + JS (ES modules), com correção de bugs e sanitização de HTML.
+
+### Novidades v4.11.1
+
+- **Botão de tema corrigido:** o botão de tema do topo agora alterna mesmo o
+  tema (auto → claro → escuro) ao ser clicado — antes ele não tinha listener e
+  não fazia nada (só funcionava pelas opções em Configurações).
+- **Layout mobile corrigido:** em telas até 768px os botões do card
+  (Exportar/Importar JSON, Verificar atualizações, Resetar) empilham cheios e
+  alinhados, sem a indentação e o encostamento que apareciam na versão mobile.
+- **Atualização com download no Electron:** o botão **Baixar e atualizar**
+  baixa o instalador da release para `%TEMP%\JapDexUpdate` (com progresso) e o
+  botão **Instalar agora** inicia a atualização (o NSIS detecta o app em
+  execução e pede para fechá-lo); no navegador/APK continua abrindo a página
+  da release. O repositório agora é **público** — a verificação funciona sem
+  token (o campo de token segue disponível caso volte a ser privado).
 
 ### Novidades v4.11.0
 
