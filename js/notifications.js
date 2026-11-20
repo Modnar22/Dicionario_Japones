@@ -20,8 +20,9 @@ export function calculateLevel(xp) {
   return 1;
 }
 
-// v3.7.9 showFlyout (Modificado)
-export function showFlyout(type, title, message, icon) {
+// v3.7.9 showFlyout (Modificado) — v4.12: 5º parâmetro opcional `onClick`
+// torna o aviso clicável (ex.: "Nova versão disponível" → seção Atualizações).
+export function showFlyout(type, title, message, icon, onClick) {
     if (!state.settings.sound && type !== 'xp' && type !== 'correct' && type !== 'wrong') return;
 const container = document.getElementById('notif-container');
     const flyout = document.createElement('div');
@@ -40,6 +41,20 @@ flyout.innerHTML = `<div class="icon">${icon}</div>
 if (type === 'level-up' || type === 'achievement') {
         launchConfetti(5000, 100); // <- CORRIGIDO para usar launchConfetti
 }
+
+    /* Aviso clicável (v4.12): executa a ação e fecha o flyout na hora. */
+    if (typeof onClick === 'function') {
+        flyout.classList.add('clickable');
+        flyout.addEventListener('click', () => {
+            try { onClick(); } catch (e) { /* ignore */ }
+            flyout.classList.remove('active');
+            setTimeout(() => {
+                flyout.remove();
+                isNotifShowing = false;
+                processNotifQueue();
+            }, 300);
+        });
+    }
 
     // Oculta após 4 segundos
     setTimeout(() => {

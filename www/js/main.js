@@ -76,6 +76,14 @@ export function init() {
     document.getElementById('theme-toggle')
       ?.addEventListener('click', () => cycleTheme());
 
+    /* ===== Verificação automática de atualização (v4.12) =====
+       Consulta silenciosa na entrada: só notifica (flyout clicável que leva
+       à seção Atualizações) se houver versão nova — não mostra "está
+       atualizado" nem erro se estiver offline. */
+    setTimeout(() => {
+      try { checkForUpdates({ silent: true }); } catch (e) { /* ignore */ }
+    }, 6000);
+
     // ===== Tutorial em etapas (1ª execução + botão "?") =====
     document.getElementById('help-btn')
       ?.addEventListener('click', () => startTutorial());

@@ -155,6 +155,9 @@ input:checked + .slider:before{-webkit-transform:translateX(16px);-ms-transform:
     border: 1px solid rgba(255,255,255,0.1);
 }
 .xp-flyout.active{opacity:1; transform:translateX(0);}
+/* v4.12: flyout com ação (ex.: aviso de atualização clicável) */
+.xp-flyout.clickable{cursor:pointer;}
+.xp-flyout.clickable:hover{filter:brightness(1.15);}
 
 .xp-flyout.level-up{
     background:linear-gradient(90deg, var(--accent2), var(--accent1));
@@ -264,6 +267,13 @@ input:checked + .slider:before{-webkit-transform:translateX(16px);-ms-transform:
 /* Botões de ação do box de atualização (v4.11.1: baixar/instalar) */
 .update-actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center;}
 .update-box .update-actions{flex:0 1 auto;min-width:auto;}
+/* v4.12: barra de progresso do download (estilo update de aplicativo) */
+.update-progress{height:8px;margin-top:8px;border-radius:999px;background:var(--bg1);
+  border:1px solid var(--border);overflow:hidden;}
+.update-progress span{display:block;height:100%;width:0;border-radius:999px;
+  background:linear-gradient(90deg,var(--accent2),var(--accent1));transition:width .25s ease;}
+/* Destaque ao chegar pela notificação clicável */
+.update-box.flash{box-shadow:0 0 0 3px var(--accent1);}
 .gh-token-details{margin-top:10px;border:1px solid var(--border);border-radius:var(--radius);
   padding:10px 14px;background:var(--panel);font-size:0.88em;}
 .gh-token-details summary{cursor:pointer;font-weight:600;color:var(--accent1);}

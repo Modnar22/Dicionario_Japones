@@ -1,10 +1,13 @@
-/* ===== VERIFICAR ATUALIZAÇÕES (v4.11) =====
-   Consulta a API pública do GitHub (CORS liberado — funciona no navegador,
+/* ===== VERIFICAR ATUALIZAÇÕES (v4.11 → v4.12) =====
+   Consulta a API do GitHub (CORS liberado — funciona no navegador,
    no Electron e no APK) e compara com a versão atual (APP_VERSION).
-   Sem electron-updater: no Electron o botão baixa o instalador para %TEMP%
-   e o "Instalar atual" inicia a atualização (binários unsigned + SAC em
-   imposição pedem confirmação do usuário); no navegador/APK o botão abre
-   a página do release para baixar manualmente.                     */
+   - Na ENTRADA do app faz uma verificação automática silenciosa (v4.12):
+     só notifica (flyout clicável → Configurações) se houver versão nova.
+   - Download DENTRO do app (estilo update de aplicativo, v4.11.1/v4.12):
+     * Electron → instalador em %TEMP%\JapDexUpdate (barra de progresso);
+     * APK Android → plugin nativo "Updater" baixa p/ o diretório do app
+       e abre o instalador do sistema (pede permissão na 1ª vez);
+     * navegador → abre a página do release (não há como baixar sozinho). */
 import { APP_VERSION } from './config.js';
 import { showFlyout } from './notifications.js';
 
@@ -65,15 +68,49 @@ function native() {
     return (typeof window !== 'undefined' && window.japdexNative) || null;
 }
 
+/* Plugin nativo do Android (registrado no MainActivity). Mesmo padrão do
+   TextToSpeech: só existe na plataforma nativa — senão retorna null. */
+function androidUpdater() {
+    try {
+        const cap = window.Capacitor;
+        if (!cap) return null;
+        if (typeof cap.isNativePlatform === 'function' && !cap.isNativePlatform()) return null;
+        if (typeof cap.getPlatform === 'function' && cap.getPlatform() !== 'android') return null;
+        if (typeof cap.registerPlugin === 'function') return cap.registerPlugin('Updater');
+        if (cap.Plugins && cap.Plugins.Updater) return cap.Plugins.Updater;
+    } catch (e) { /* ignore */ }
+    return null;
+}
+
+/* 'electron' | 'android' | 'web' — define o comportamento do botão. */
+function platformKind() {
+    if (native()) return 'electron';
+    if (androidUpdater()) return 'android';
+    return 'web';
+}
+
 /* Release pendente de download (preenchida ao detectar versão nova). */
-let pendingAsset = null;   // { url, name }
+let pendingAsset = null;   // { url, name, releaseUrl }
 let installedFile = null;  // caminho do instalador já baixado
 let progressBound = false;
 
+/* Escolhe o artefato certo da release para cada plataforma. */
+function pickAsset(assets) {
+    const kind = platformKind();
+    if (kind === 'electron') {
+        return assets.find(a => /instalador\.exe$/i.test(a.name))
+            || assets.find(a => /portatil\.exe$/i.test(a.name))
+            || null;
+    }
+    if (kind === 'android') {
+        return assets.find(a => /\.apk$/i.test(a.name)) || null;
+    }
+    return null;
+}
+
 function releaseActions(url) {
     const openRel = `onclick="window.open('${String(url).replace(/'/g, '')}', '_blank')"`;
-    const n = native();
-    if (n && pendingAsset) {
+    if (pendingAsset) {
         return `
         <div class="update-actions">
           <button class="btn btn-primary" onclick="downloadAndInstallUpdate()">
@@ -89,43 +126,45 @@ function releaseActions(url) {
         </div>`;
 }
 
-/* Electron: baixa o instalador da release para %TEMP% e mostra o botão
-   "Instalar agora" (o NSIS fecha o app antes de atualizar). */
-export async function downloadAndInstallUpdate() {
-    const n = native();
-    if (!n || !pendingAsset) return;
-    setResult(`
+/* Caixa de download com barra de progresso (estilo update de aplicativo). */
+function progressBoxHtml(name) {
+    return `
       <div class="update-box">
         <i class="fas fa-spinner fa-spin" aria-hidden="true"></i>
-        <div><strong>Baixando ${esc(pendingAsset.name)}…</strong>
-          <small id="update-progress-text">iniciando…</small></div>
-      </div>`);
-    if (!progressBound) {
-        progressBound = true;
-        n.onUpdateProgress((pct) => {
-            const t = document.getElementById('update-progress-text');
-            if (t) t.textContent = `${pct}% concluído`;
-        });
-    }
-    const res = await n.downloadUpdate(pendingAsset.url, pendingAsset.name, getToken());
-    if (!res || !res.ok) {
-        const why = esc((res && res.error) || 'falha desconhecida');
-        setResult(`
-          <div class="update-box error">
-            <i class="fas fa-exclamation-triangle" aria-hidden="true"></i>
-            <div><strong>Não foi possível baixar</strong>
-              <small>${why} — você também pode baixar pela página do release.</small></div>
-            <div class="update-actions">
-              <button class="btn btn-secondary"
-                onclick="window.open('${pendingAsset.releaseUrl || RELEASE_URL}', '_blank')">
-                <i class="fas fa-external-link-alt"></i> Página do release</button>
-            </div>
-          </div>`);
-        showFlyout('wrong', 'Download falhou', why, '<i class="fas fa-wifi"></i>');
-        return;
-    }
+        <div><strong>Baixando ${esc(name)}…</strong>
+          <small id="update-progress-text">iniciando…</small>
+          <div class="update-progress"><span id="update-progress-bar"></span></div>
+        </div>
+      </div>`;
+}
+
+function setProgress(pct) {
+    const t = document.getElementById('update-progress-text');
+    if (t) t.textContent = `${pct}% concluído`;
+    const b = document.getElementById('update-progress-bar');
+    if (b) b.style.width = `${Math.max(0, Math.min(100, pct))}%`;
+}
+
+/* Leva o usuário direto para a seção "Atualizações" (flyout clicável). */
+function goToUpdateSection() {
+    try {
+        if (typeof window.switchTab === 'function') window.switchTab('settings');
+        const el = document.getElementById('update-result');
+        if (el) {
+            el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            const box = el.querySelector('.update-box');
+            if (box) {
+                box.classList.add('flash');
+                setTimeout(() => box.classList.remove('flash'), 2500);
+            }
+        }
+    } catch (e) { /* ignore */ }
+}
+
+/* Resultado comum do download (Electron e Android). */
+function showDownloadDone(res) {
     installedFile = res.path;
-    const mb = (res.bytes / (1024 * 1024)).toFixed(1);
+    const mb = ((res.bytes || 0) / (1024 * 1024)).toFixed(1);
     setResult(`
       <div class="update-box has-update">
         <i class="fas fa-check-circle" aria-hidden="true"></i>
@@ -135,7 +174,7 @@ export async function downloadAndInstallUpdate() {
           <button class="btn btn-primary" onclick="installDownloadedUpdate()">
             <i class="fas fa-play"></i> Instalar agora</button>
           <button class="btn btn-secondary"
-            onclick="window.open('${pendingAsset.releaseUrl || RELEASE_URL}', '_blank')">
+            onclick="window.open('${(pendingAsset && pendingAsset.releaseUrl) || RELEASE_URL}', '_blank')">
             <i class="fas fa-external-link-alt"></i> Página do release</button>
         </div>
       </div>`);
@@ -144,20 +183,123 @@ export async function downloadAndInstallUpdate() {
         '<i class="fas fa-download"></i>');
 }
 
-/* Electron: abre o instalador já baixado. */
+function showDownloadError(error) {
+    const why = esc(error || 'falha desconhecida');
+    setResult(`
+      <div class="update-box error">
+        <i class="fas fa-exclamation-triangle" aria-hidden="true"></i>
+        <div><strong>Não foi possível baixar</strong>
+          <small>${why} — você também pode baixar pela página do release.</small></div>
+        <div class="update-actions">
+          <button class="btn btn-secondary"
+            onclick="window.open('${(pendingAsset && pendingAsset.releaseUrl) || RELEASE_URL}', '_blank')">
+            <i class="fas fa-external-link-alt"></i> Página do release</button>
+        </div>
+      </div>`);
+    showFlyout('wrong', 'Download falhou', why, '<i class="fas fa-wifi"></i>');
+}
+
+/* Baixa a atualização DENTRO do app e mostra "Instalar agora".
+   Electron: instalador em %TEMP% (IPC). Android: plugin nativo "Updater". */
+export async function downloadAndInstallUpdate() {
+    if (!pendingAsset) return;
+    const kind = platformKind();
+    if (kind === 'web') return;
+    setResult(progressBoxHtml(pendingAsset.name));
+
+    let res = null;
+    if (kind === 'electron') {
+        const n = native();
+        if (!progressBound) {
+            progressBound = true;
+            n.onUpdateProgress(setProgress);
+        }
+        res = await n.downloadUpdate(pendingAsset.url, pendingAsset.name, getToken());
+    } else {
+        const p = androidUpdater();
+        if (!p) {
+            showDownloadError('plugin de atualização indisponível');
+            return;
+        }
+        let sub = null;
+        try {
+            sub = await p.addListener('progress', (d) => {
+                if (d && d.total > 0) {
+                    setProgress(Math.round((d.loaded / d.total) * 100));
+                }
+            });
+        } catch (e) { /* listener é opcional */ }
+        try {
+            const r = await p.download({
+                url: pendingAsset.url,
+                fileName: pendingAsset.name,
+                token: getToken() || undefined,
+            });
+            res = (r && r.path) ? { ok: true, path: r.path, bytes: r.bytes || 0 } : r;
+        } catch (e) {
+            res = { ok: false, error: String((e && e.message) || e) };
+        } finally {
+            if (sub && typeof sub.remove === 'function') sub.remove();
+        }
+    }
+
+    if (!res || !res.ok) {
+        showDownloadError(res && res.error);
+        return;
+    }
+    showDownloadDone(res);
+}
+
+/* Abre o instalador já baixado (Electron: NSIS; Android: instalador do
+   sistema — na 1ª vez abre a tela de permissão "instalar apps desconhecidos"). */
 export async function installDownloadedUpdate() {
-    const n = native();
-    if (!n || !installedFile) return;
-    const res = await n.installUpdate(installedFile);
+    if (!installedFile) return;
+    const kind = platformKind();
+    let res = null;
+
+    if (kind === 'electron') {
+        res = await native().installUpdate(installedFile);
+    } else if (kind === 'android') {
+        const p = androidUpdater();
+        if (!p) return;
+        try {
+            res = await p.install({ path: installedFile });
+        } catch (e) {
+            res = { ok: false, error: String((e && e.message) || e) };
+        }
+        if (res && res.needsPermission) {
+            setResult(`
+              <div class="update-box">
+                <i class="fas fa-shield-alt" aria-hidden="true"></i>
+                <div><strong>Autorize a instalação</strong>
+                  <small>O Android abriu a tela de permissão para esta fonte.
+                    Toque em <strong>Permitir</strong>, volte ao Jap-Dex e clique
+                    em "Instalar agora" de novo.</small></div>
+                <div class="update-actions">
+                  <button class="btn btn-primary" onclick="installDownloadedUpdate()">
+                    <i class="fas fa-redo"></i> Instalar agora</button>
+                </div>
+              </div>`);
+            showFlyout('xp', 'Permissão necessária ⚠️',
+                'Autorize a instalação e volte ao app para continuar.',
+                '<i class="fas fa-shield-alt"></i>');
+            return;
+        }
+    } else {
+        return;
+    }
+
     if (res && res.ok) {
+        const detalhe = kind === 'android'
+            ? 'Siga a tela do Android para confirmar e concluir a atualização.'
+            : 'Siga as instruções para fechar o Jap-Dex e concluir a atualização.';
         setResult(`
           <div class="update-box up-to-date">
             <i class="fas fa-magic" aria-hidden="true"></i>
             <div><strong>Instalador aberto!</strong>
-              <small>Siga as instruções para fechar o Jap-Dex e concluir a atualização.</small></div>
+              <small>${detalhe}</small></div>
           </div>`);
-        showFlyout('xp', 'Instalador aberto 🔄',
-            'Confirme o fechamento do app para concluir a atualização.',
+        showFlyout('xp', 'Instalador aberto 🔄', detalhe,
             '<i class="fas fa-magic"></i>');
     } else {
         const why = esc((res && res.error) || 'falha desconhecida');
@@ -171,9 +313,13 @@ export async function installDownloadedUpdate() {
     }
 }
 
-export async function checkForUpdates() {
+/* Verifica se há versão nova.
+   opts.silent (v4.12): usada na ABERTURA do app — não mexe no botão, não
+   mostra "está atualizado" nem erro se offline; só avisa se houver update. */
+export async function checkForUpdates(opts = {}) {
+    const silent = !!(opts && opts.silent);
     const btn = document.getElementById('check-updates-btn');
-    if (btn) {
+    if (btn && !silent) {
         btn.disabled = true;
         btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Verificando…';
     }
@@ -194,10 +340,9 @@ export async function checkForUpdates() {
         if (cmpVer(latest, APP_VERSION) > 0) {
             const url = String(rel.html_url || RELEASE_URL);
             const assets = Array.isArray(rel.assets) ? rel.assets : [];
-            const exe = assets.find(a => /instalador\.exe$/i.test(a.name))
-                || assets.find(a => /portatil\.exe$/i.test(a.name));
-            pendingAsset = (native() && exe)
-                ? { url: String(exe.url || ''), name: String(exe.name || ''), releaseUrl: url }
+            const asset = pickAsset(assets);
+            pendingAsset = asset
+                ? { url: String(asset.url || ''), name: String(asset.name || ''), releaseUrl: url }
                 : null;
             setResult(`
               <div class="update-box has-update">
@@ -208,10 +353,19 @@ export async function checkForUpdates() {
                 </div>
                 ${releaseActions(url)}
               </div>`);
-            showFlyout('xp', 'Atualização disponível! 🔄',
-                `O Jap-Dex v${latest} já está disponível (você está na v${APP_VERSION}).`,
-                '<i class="fas fa-cloud-download-alt"></i>');
+            if (silent) {
+                // Verificação automática da entrada: avisa e leva ao botão
+                showFlyout('xp', `Nova versão v${latest} disponível! 🔄`,
+                    'Há uma atualização do Jap-Dex — clique aqui para baixar.',
+                    '<i class="fas fa-cloud-download-alt"></i>',
+                    goToUpdateSection);
+            } else {
+                showFlyout('xp', 'Atualização disponível! 🔄',
+                    `O Jap-Dex v${latest} já está disponível (você está na v${APP_VERSION}).`,
+                    '<i class="fas fa-cloud-download-alt"></i>');
+            }
         } else {
+            if (silent) return; // na entrada: não incomoda quem já está atualizado
             setResult(`
               <div class="update-box up-to-date">
                 <i class="fas fa-check-circle" aria-hidden="true"></i>
@@ -223,6 +377,7 @@ export async function checkForUpdates() {
                 '<i class="fas fa-check"></i>');
         }
     } catch (e) {
+        if (silent) { console.warn('checkForUpdates (automática):', e); return; }
         console.error('checkForUpdates:', e);
         const status = e.status;
         if (status === 404 || status === 401 || status === 403) {
@@ -250,7 +405,7 @@ export async function checkForUpdates() {
                 '<i class="fas fa-wifi"></i>');
         }
     } finally {
-        if (btn) {
+        if (btn && !silent) {
             btn.disabled = false;
             btn.innerHTML = '<i class="fas fa-sync-alt"></i> Verificar atualizações';
         }
