@@ -276,6 +276,142 @@ export const WORD_PACKS = [
             },
         ],
     },
+    {
+        id: 'natureza', icon: '🌳', name: 'Natureza', tiers: [
+            {
+                cost: 50, jlpt: 'N5',
+                words: [
+                    { text: '山', reading: 'やま', translation: 'montanha' },
+                    { text: '川', reading: 'かわ', translation: 'rio' },
+                    { text: '空', reading: 'そら', translation: 'céu' },
+                    { text: '海', reading: 'うみ', translation: 'mar' },
+                    { text: '木', reading: 'き', translation: 'árvore' },
+                ],
+            },
+            {
+                cost: 90, jlpt: 'N4',
+                words: [
+                    { text: '花', reading: 'はな', translation: 'flor' },
+                    { text: '草', reading: 'くさ', translation: 'grama / capim' },
+                    { text: '雨', reading: 'あめ', translation: 'chuva' },
+                    { text: '雪', reading: 'ゆき', translation: 'neve' },
+                    { text: '風', reading: 'かぜ', translation: 'vento' },
+                ],
+            },
+            {
+                cost: 140, jlpt: 'None',
+                words: [
+                    { text: '森', reading: 'もり', translation: 'floresta' },
+                    { text: '湖', reading: 'みずうみ', translation: 'lago' },
+                    { text: '石', reading: 'いし', translation: 'pedra' },
+                    { text: '土', reading: 'つち', translation: 'terra / solo' },
+                    { text: '星', reading: 'ほし', translation: 'estrela' },
+                ],
+            },
+        ],
+    },
+    {
+        id: 'roupas', icon: '👕', name: 'Roupas', tiers: [
+            {
+                cost: 50, jlpt: 'N5',
+                words: [
+                    { text: '服', reading: 'ふく', translation: 'roupa' },
+                    { text: '靴', reading: 'くつ', translation: 'sapato' },
+                    { text: '帽子', reading: 'ぼうし', translation: 'chapéu' },
+                    { text: '眼鏡', reading: 'めがね', translation: 'óculos' },
+                    { text: 'ネクタイ', reading: 'ねくたい', translation: 'gravata' },
+                ],
+            },
+            {
+                cost: 90, jlpt: 'N4',
+                words: [
+                    { text: 'シャツ', reading: 'しゃつ', translation: 'camisa' },
+                    { text: 'ズボン', reading: 'ずぼん', translation: 'calça' },
+                    { text: 'スカート', reading: 'すかーと', translation: 'saia' },
+                    { text: '靴下', reading: 'くつした', translation: 'meia (pé)' },
+                    { text: '手袋', reading: 'てぶくろ', translation: 'luva' },
+                ],
+            },
+            {
+                cost: 140, jlpt: 'None',
+                words: [
+                    { text: '襟', reading: 'えり', translation: 'colarinho' },
+                    { text: '帯', reading: 'おび', translation: 'cinto (obi)' },
+                    { text: '雨傘', reading: 'あまがさ', translation: 'guarda-chuva' },
+                    { text: '靴ひも', reading: 'くつひも', translation: 'cadarço' },
+                    { text: 'スニーカー', reading: 'すにかー', translation: 'tênis (calçado)' },
+                ],
+            },
+        ],
+    },
+    {
+        id: 'corpo', icon: '🧍', name: 'Corpo', tiers: [
+            {
+                cost: 70, jlpt: 'N5',
+                words: [
+                    { text: '頭', reading: 'あたま', translation: 'cabeça' },
+                    { text: '手', reading: 'て', translation: 'mão' },
+                    { text: '目', reading: 'め', translation: 'olho' },
+                    { text: '耳', reading: 'みみ', translation: 'orelha' },
+                    { text: '口', reading: 'くち', translation: 'boca' },
+                ],
+            },
+            {
+                cost: 110, jlpt: 'N4',
+                words: [
+                    { text: '鼻', reading: 'はな', translation: 'nariz' },
+                    { text: '歯', reading: 'は', translation: 'dente' },
+                    { text: '足', reading: 'あし', translation: 'pé / perna' },
+                    { text: '指', reading: 'ゆび', translation: 'dedo' },
+                    { text: '顔', reading: 'かお', translation: 'rosto' },
+                ],
+            },
+            {
+                cost: 160, jlpt: 'None',
+                words: [
+                    { text: '肩', reading: 'かた', translation: 'ombro' },
+                    { text: '腕', reading: 'うで', translation: 'braço' },
+                    { text: '膝', reading: 'ひざ', translation: 'joelho' },
+                    { text: '背', reading: 'せ', translation: 'costas (tronco)' },
+                    { text: '首', reading: 'くび', translation: 'pescoço' },
+                ],
+            },
+        ],
+    },
+    {
+        id: 'cidades', icon: '🏙️', name: 'Cidades', tiers: [
+            {
+                cost: 70, jlpt: 'N5',
+                words: [
+                    { text: '駅', reading: 'えき', translation: 'estação (trem)' },
+                    { text: '病院', reading: 'びょういん', translation: 'hospital' },
+                    { text: '店', reading: 'みせ', translation: 'loja' },
+                    { text: '公園', reading: 'こうえん', translation: 'parque' },
+                    { text: '道', reading: 'みち', translation: 'rua / caminho' },
+                ],
+            },
+            {
+                cost: 110, jlpt: 'N4',
+                words: [
+                    { text: '銀行', reading: 'ぎんこう', translation: 'banco' },
+                    { text: '郵便局', reading: 'ゆうびんきょく', translation: 'correio' },
+                    { text: '図書館', reading: 'としょかん', translation: 'biblioteca' },
+                    { text: '映画館', reading: 'えいがかん', translation: 'cinema' },
+                    { text: 'レストラン', reading: 'れすとらん', translation: 'restaurante' },
+                ],
+            },
+            {
+                cost: 160, jlpt: 'None',
+                words: [
+                    { text: '空港', reading: 'くうこう', translation: 'aeroporto' },
+                    { text: '博物館', reading: 'はくぶつかん', translation: 'museu' },
+                    { text: '寺', reading: 'てら', translation: 'templo budista' },
+                    { text: '城', reading: 'しろ', translation: 'castelo' },
+                    { text: '橋', reading: 'はし', translation: 'ponte' },
+                ],
+            },
+        ],
+    },
 ];
 
 /* Nível atual de um tema: quantos pacotes dele já foram comprados.

@@ -1,10 +1,24 @@
-# 📱 Jap-Dex — v4.12.1
+# 📱 Jap-Dex — v4.13.0
 
 Aplicativo de estudo de japonês: **vocabulário, kanji, alfabetos (hiragana/katakana),
 SRS (revisão espaçada), quizzes, XP/níveis e 50 conquistas** — 100% offline.
 
 Original: arquivo único `3.8.7.html` (2345 linhas) → reestruturado em módulos
 HTML + CSS + JS (ES modules), com correção de bugs e sanitização de HTML.
+
+### Novidades v4.13.0
+
+- **4 novos temas na loja** (60 palavras novas, 12 cards de tema no total):
+  - 🌳 **Natureza** (50/90/140 XP): montanha, rio, céu, mar, árvore… flor,
+    chuva, neve… floresta, lago, estrela;
+  - 👕 **Roupas** (50/90/140 XP): roupa, sapato, chapéu… camisa, saia,
+    luva… colarinho, obi, guarda-chuva;
+  - 🧍 **Corpo** (70/110/160 XP): cabeça, mão, olho… nariz, dente, rosto…
+    ombro, joelho, pescoço;
+  - 🏙️ **Cidades** (70/110/160 XP): estação, hospital, parque… banco,
+    biblioteca, cinema… aeroporto, museu, castelo.
+- Cada tema segue o formato atual: **3 níveis progressivos × 5 palavras
+  secretas**, com desconto proporcional para palavras que você já tem.
 
 ### Novidades v4.12.1
 
