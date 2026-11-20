@@ -1,6 +1,6 @@
 {
   "name": "jap-dex",
-  "version": "4.12.0",
+  "version": "4.12.1",
   "description": "Jap-Dex - aplicativo de estudo de japonés (vocabulário, kanji, alfabetos, SRS e quizzes)",
   "main": "electron/main.js",
   "author": "Modnar22",

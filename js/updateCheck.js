@@ -5,8 +5,10 @@
      só notifica (flyout clicável → Configurações) se houver versão nova.
    - Download DENTRO do app (estilo update de aplicativo, v4.11.1/v4.12):
      * Electron → instalador em %TEMP%\JapDexUpdate (barra de progresso);
-     * APK Android → plugin nativo "Updater" baixa p/ o diretório do app
-       e abre o instalador do sistema (pede permissão na 1ª vez);
+     * APK Android → plugin nativo "Updater" usa o DownloadManager do
+       sistema: barra de progresso no app e a INSTALAÇÃO pela notificação
+       padrão do Android (v4.12.1 — sem REQUEST_INSTALL_PACKAGES, que o
+       Play Protect marcava como "potencialmente perigoso");
      * navegador → abre a página do release (não há como baixar sozinho). */
 import { APP_VERSION } from './config.js';
 import { showFlyout } from './notifications.js';
@@ -161,25 +163,35 @@ function goToUpdateSection() {
     } catch (e) { /* ignore */ }
 }
 
-/* Resultado comum do download (Electron e Android). */
+/* Resultado do download. v4.12.1 (Android): a instalação NÃO é feita pelo
+   nosso app (sinal de "dropper" no Play Protect) — o DownloadManager mostra
+   a notificação padrão e o usuário toca nela para instalar. */
 function showDownloadDone(res) {
     installedFile = res.path;
     const mb = ((res.bytes || 0) / (1024 * 1024)).toFixed(1);
-    setResult(`
-      <div class="update-box has-update">
-        <i class="fas fa-check-circle" aria-hidden="true"></i>
-        <div><strong>Download concluído!</strong>
-          <small>${mb} MB salvos — clique em "Instalar agora" para atualizar.</small></div>
+    const android = platformKind() === 'android';
+    const instrucao = android
+        ? `${mb} MB salvos — toque na notificação <strong>"Download concluído"</strong> do Android para instalar.`
+        : `${mb} MB salvos — clique em "Instalar agora" para atualizar.`;
+    const acao = android ? '' : `
         <div class="update-actions">
           <button class="btn btn-primary" onclick="installDownloadedUpdate()">
             <i class="fas fa-play"></i> Instalar agora</button>
           <button class="btn btn-secondary"
             onclick="window.open('${(pendingAsset && pendingAsset.releaseUrl) || RELEASE_URL}', '_blank')">
             <i class="fas fa-external-link-alt"></i> Página do release</button>
-        </div>
+        </div>`;
+    setResult(`
+      <div class="update-box has-update">
+        <i class="fas fa-check-circle" aria-hidden="true"></i>
+        <div><strong>Download concluído!</strong>
+          <small>${instrucao}</small></div>
+        ${acao}
       </div>`);
     showFlyout('xp', 'Download concluído ⬇️',
-        'Clique em "Instalar agora" para concluir a atualização.',
+        android
+            ? 'Toque na notificação do Android para instalar a atualização.'
+            : 'Clique em "Instalar agora" para concluir a atualização.',
         '<i class="fas fa-download"></i>');
 }
 
@@ -250,49 +262,18 @@ export async function downloadAndInstallUpdate() {
     showDownloadDone(res);
 }
 
-/* Abre o instalador já baixado (Electron: NSIS; Android: instalador do
-   sistema — na 1ª vez abre a tela de permissão "instalar apps desconhecidos"). */
+/* Abre o instalador já baixado (Electron: NSIS). v4.12.1: no Android a
+   instalação é feita pela notificação do DownloadManager — por isso este
+   botão não existe mais lá (removido junto com REQUEST_INSTALL_PACKAGES
+   para o Play Protect não classificar o APK como "dropper"). */
 export async function installDownloadedUpdate() {
     if (!installedFile) return;
-    const kind = platformKind();
-    let res = null;
+    if (platformKind() !== 'electron') return;
 
-    if (kind === 'electron') {
-        res = await native().installUpdate(installedFile);
-    } else if (kind === 'android') {
-        const p = androidUpdater();
-        if (!p) return;
-        try {
-            res = await p.install({ path: installedFile });
-        } catch (e) {
-            res = { ok: false, error: String((e && e.message) || e) };
-        }
-        if (res && res.needsPermission) {
-            setResult(`
-              <div class="update-box">
-                <i class="fas fa-shield-alt" aria-hidden="true"></i>
-                <div><strong>Autorize a instalação</strong>
-                  <small>O Android abriu a tela de permissão para esta fonte.
-                    Toque em <strong>Permitir</strong>, volte ao Jap-Dex e clique
-                    em "Instalar agora" de novo.</small></div>
-                <div class="update-actions">
-                  <button class="btn btn-primary" onclick="installDownloadedUpdate()">
-                    <i class="fas fa-redo"></i> Instalar agora</button>
-                </div>
-              </div>`);
-            showFlyout('xp', 'Permissão necessária ⚠️',
-                'Autorize a instalação e volte ao app para continuar.',
-                '<i class="fas fa-shield-alt"></i>');
-            return;
-        }
-    } else {
-        return;
-    }
+    const res = await native().installUpdate(installedFile);
 
     if (res && res.ok) {
-        const detalhe = kind === 'android'
-            ? 'Siga a tela do Android para confirmar e concluir a atualização.'
-            : 'Siga as instruções para fechar o Jap-Dex e concluir a atualização.';
+        const detalhe = 'Siga as instruções para fechar o Jap-Dex e concluir a atualização.';
         setResult(`
           <div class="update-box up-to-date">
             <i class="fas fa-magic" aria-hidden="true"></i>

@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1"/>
   <!-- Sem Referer: o TTS online (Google) recusa requisições com referente -->
   <meta name="referrer" content="no-referrer"/>
-  <title>Jap-Dex - v4.12.0 (Atualização Automática e Download no App)</title>
+  <title>Jap-Dex - v4.12.1 (Correção Play Protect — instalação pelo sistema)</title>
 
   <!-- Ícone do projeto -->
   <link rel="icon" href="favicon.ico" sizes="any"/>
@@ -37,7 +37,7 @@
 <div id="menu-backdrop" class="menu-backdrop"></div>
 
 <div class="sidebar" id="sidebar">
-  <h1>Jap-Dex <span style="font-size: 12px; opacity: 0.6;">v4.12.0</span></h1>
+  <h1>Jap-Dex <span style="font-size: 12px; opacity: 0.6;">v4.12.1</span></h1>
     <div class="level-info">
     <div id="level-display">Level 1</div>
     <div class="level-bar"><div id="xp-progress" class="level-progress" style="width: 0%;"></div></div>
@@ -232,11 +232,13 @@
       </details>
       <p style="margin-top:8px; font-size:0.85em; color:var(--muted);">
         Ao abrir o app é feita uma <strong>verificação automática</strong> — se
-        houver versão nova aparece um aviso clicável. No computador e no
-        Android, <i class="fas fa-download"></i> <strong>Baixar e atualizar</strong>
+        houver versão nova aparece um aviso clicável. No computador,
+        <i class="fas fa-download"></i> <strong>Baixar e atualizar</strong>
         baixa <strong>dentro do app</strong> (com barra de progresso) e
-        <strong>Instalar agora</strong> inicia a atualização; no navegador abre
-        a página da release (instalador/portátil/APK).</p>
+        <strong>Instalar agora</strong> inicia a atualização; no Android o
+        download também é interno e a instalação é feita pela
+        <strong>notificação do sistema</strong> (toque em "Download
+        concluído"); no navegador abre a página da release.</p>
     
       <h3 style="margin-top:20px;">Aparência</h3>
       <div class="theme-opts">

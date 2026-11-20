@@ -4,7 +4,7 @@
 export const STORAGE_KEY = 'jp_app_v4_7';
 /* Versão atual do app (usada no "Verificar atualizações") — bumpar a cada
    release junto com package.json/index.html.                            */
-export const APP_VERSION = '4.12.0';
+export const APP_VERSION = '4.12.1';
 export const ALPHA_SILVER_THRESHOLD = 3; 
 export const ALPHA_GOLD_THRESHOLD = 5;   // 5 acertos = DOMINADA (maestria)
 export const WORD_SILVER_THRESHOLD = 3; // Adicionado como constante global (Ponto 3)

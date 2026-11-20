@@ -2,7 +2,4 @@
 <paths xmlns:android="http://schemas.android.com/apk/res/android">
     <external-path name="my_images" path="." />
     <cache-path name="my_cache_images" path="." />
-    <!-- v4.12: APK da atualização baixado pelo plugin Updater
-         (getExternalFilesDir → external-files-path) -->
-    <external-files-path name="external_files" path="." />
 </paths>

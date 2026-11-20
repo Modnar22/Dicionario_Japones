@@ -1,10 +1,23 @@
-# 📱 Jap-Dex — v4.12.0
+# 📱 Jap-Dex — v4.12.1
 
 Aplicativo de estudo de japonês: **vocabulário, kanji, alfabetos (hiragana/katakana),
 SRS (revisão espaçada), quizzes, XP/níveis e 50 conquistas** — 100% offline.
 
 Original: arquivo único `3.8.7.html` (2345 linhas) → reestruturado em módulos
 HTML + CSS + JS (ES modules), com correção de bugs e sanitização de HTML.
+
+### Novidades v4.12.1
+
+- **Correção do aviso do Play Protect:** a v4.12.0 adicionava ao APK a
+  permissão `REQUEST_INSTALL_PACKAGES` + código de auto-instalação — padrão
+  que o Play Protect associa a malware ("dropper") e marcava o APK como
+  *"potencialmente perigoso"* na hora de instalar a atualização.
+- **Nova abordagem (download mantido, instalação pelo sistema):** o plugin
+  **Updater** agora usa o **DownloadManager** do Android — o download
+  continua **dentro do app** com barra de progresso, mas a instalação passa
+  pela **notificação padrão do sistema** ("Download concluído → toque para
+  instalar"), exatamente como ao baixar um APK no navegador. A permissão e
+  o código de instalação do nosso app foram **removidos**.
 
 ### Novidades v4.12.0
 
